@@ -19,7 +19,7 @@ let users = [{
 }, {
     username: 'Khalique',
     email: 'khaliquer@gmail.com',
-    password: 'Oyster22'
+    password: 'Oyster@22'
 }];
 /*
 [{
