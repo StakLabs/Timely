@@ -4,6 +4,8 @@ window.removeAll = removeAll;
 window.viewAll = viewAll;
 window.addItem = addItem;
 
+const variables = {};
+
 let listedItems;
 
 var container;
@@ -148,7 +150,7 @@ function newItem() {
             <button type="button" onclick="start()">Back to Schedules</button>
             <br>
             <br>
-            <button type="button" onclick="addItem()">Add Schedule</button>
+            <button type="button" id="Add" onclick="addItem()">Add Schedule</button>
         </form>
     `;
 }
@@ -167,6 +169,7 @@ function addItem() {
     const ending = document.getElementById('endTime').value;
 
     if (name && date) {
+        notifyAdd();
         const newSchedule = {
             id: schedules.length + 1,
             name,
@@ -288,4 +291,91 @@ function viewAll() {
 
     allData();
 }
-//
+
+function notifyAdd() {
+    /*
+    console.log('Notification permission:', Notification.permission);
+    if (Notification.permission === 'default') {
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+                new Notification('Timely', {
+                    body: 'New item added successfully!'
+                });
+            }
+            if (permission === 'denied') {
+                alert('Please enable notifications in your browser settings to receive reminders.');
+            }
+            if (permission === 'default') {
+                alert('Please enable notifications in your browser settings to receive reminders.');
+            }
+        });
+    } else if (Notification.permission === 'granted') {
+        new Notification('Timely', {
+            body: 'New item added successfully!'
+        });
+    }
+        */
+}
+
+start();
+
+async function reminder() {
+    const user = JSON.parse(localStorage.getItem('savedUser'));
+    if (!user) {
+        console.log("No user found");
+        return;
+    }
+
+    const schedules = JSON.parse(localStorage.getItem('schedules_' + user.username)) || [];
+    const currentDate = new Date().toISOString().split('T')[0];
+    const now = new Date();
+
+    const currentTime = now.getHours().toString().padStart(2, '0') + ':' +
+                        now.getMinutes().toString().padStart(2, '0');
+
+    console.log("Current time:", currentTime);
+    console.log("Today's date:", currentDate);
+
+    if (Notification.permission === 'default') {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            alert('Please enable notifications in your browser settings to receive reminders.');
+            return;
+        }
+    } else if (Notification.permission === 'denied') {
+        alert('Please enable notifications in your browser settings to receive reminders.');
+        return;
+    }
+
+    for (const schedule of schedules) {
+        const { id, date, name, description, starting } = schedule;
+
+        console.log("Checking schedule:", schedule);
+
+        if (!variables[`notificationTitle_${id}`]) {
+            if (date === currentDate) {
+                if (starting) {
+                    console.log("Target time:", starting);
+                    if (starting === currentTime) {
+                        console.log("🔔 Sending notification for:", name);
+                        new Notification(`Reminder: ${name}`, {
+                            body: description ? 'Description: ' + description : 'No description provided',
+                        });
+
+                        variables[`notificationTitle_${id}`] = true;
+                    }
+                } else {
+                    console.log("🔔 Sending notification for:", name);
+                    new Notification(`Reminder: ${name}`, {
+                        body: description ? description : 'No description provided',
+                    });
+
+                    variables[`notificationTitle_${id}`] = true;
+                }
+            }
+        }
+    }
+}
+
+
+setInterval(reminder, 5000);
