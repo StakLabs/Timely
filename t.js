@@ -1,4 +1,14 @@
+window.start = start;
+window.newItem = newItem;
+window.removeAll = removeAll;
+window.viewAll = viewAll;
+window.addItem = addItem;
+
 let listedItems;
+
+var container;
+
+let allItems = false;
 
 let items;
 
@@ -12,6 +22,7 @@ const html = `
         <title>Timely - Schedule Smarter, Not Harder</title>
     </head>
     <body>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <h1>Welcome to Timely</h1>
         <p>Timely is a scheduling site that helps you manage your time effectively.</p>
         <p>Here you can view your schedules, add new ones, and manage your time better.</p> 
@@ -31,19 +42,25 @@ async function start() {
 
     schedules = JSON.parse(localStorage.getItem('schedules_' + user.username)) || [];
 
-    if (schedules.length === 0) {
+    if (schedules.length == 0) {
+        document.body.innerHTML = `
+            <h1>Welcome, ${user.username}!</h1>
+            <button onclick="newItem()">Add New Item</button>
+            <br>
+            <div id="scheduleContainer"></div>
+        `
         shouldRender();
     } else {
         document.body.innerHTML = `
             <h1>Welcome, ${user.username}!</h1>
             <button onclick="newItem()">Add New Item</button>
             <button onclick="removeAll();">Remove all Items</button>
-            <button onclick="viewAll()">View All Items</button>
+            <button <button onclick="allItems = true; viewAll();">View All Items</button>
             <input type="date" id="datePicker" value="${pickedDate}" onchange="pickedDate = this.value; start();">
             <br>
             <div id="scheduleContainer"></div>
-            <script src="t.js"></script>
         `;
+        container = document.querySelector('#scheduleContainer');
         data();
     }
 }
@@ -55,24 +72,31 @@ function delay(ms) {
 function removeAll() {
     const user = JSON.parse(localStorage.getItem('savedUser'));
     if (!user) return;
-
-    schedules = [];
-    localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
-    start();
+    Swal.fire({
+        title: "Are you sure you want to remove all items?",
+        showDenyButton: true,
+        showCancelButton: false,
+        confirmButtonText: "Remove",
+        denyButtonText: `Cancel`
+        }).then((result) => {
+        if (result.isConfirmed) {
+            schedules = [];
+            localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
+            start();
+        } else if (result.isDenied) {}
+    });
 }
 
 async function data() {
     let items = schedules.length;
     schedules.forEach((schedule) => {
         const { ending, starting, date, id, name, description } = schedule;
-        const container = document.querySelector('#scheduleContainer')
         if (date == pickedDate) {
             container.innerHTML += `
             <br>
             <div class="item">
                 <h2>${name}</h2>
                 <p>${description}</p>
-                <p>Date: ${date}</p>
                 <p>${starting ? 'Start Time: ' + starting : ''}</p>
                 <p>${ending ? 'End Time: ' + ending : ''}</p>
                 <button onclick="remove(${id})">Remove</button>
@@ -85,7 +109,6 @@ async function data() {
 }
 
 async function allData() {
-    const container = document.querySelector('#scheduleContainer');
     container.innerHTML = ''; // clear before showing all
     schedules.forEach((schedule) => {
         const { ending, starting, date, id, name, description } = schedule;
@@ -161,23 +184,30 @@ function addItem() {
 }
 
 async function shouldRender() {
-    if (schedules.length === 0) {
-        document.body.innerHTML += '<h1>No items found. <a onclick="newItem()">Please add an item by clicking here.</a></h1>';
-    } else {
-        while (listedItems !== items) {
-            await delay(1000);
-            data();
-        }
+    while (listedItems !== items) {
+        await delay(1000);
+        data();
     }
 }
 
 function remove(id) {
     const user = JSON.parse(localStorage.getItem('savedUser'));
     if (!user) return;
-
-    schedules = schedules.filter(schedule => schedule.id !== id);
-    localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
-    start();
+    Swal.fire({
+        title: "Are you sure you want to remove this item?",
+        showDenyButton: true,
+        showCancelButton: false,
+        confirmButtonText: "Remove",
+        denyButtonText: `Cancel`
+        }).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+            schedules = schedules.filter(schedule => schedule.id !== id);
+            localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
+            start();
+            if (allItems && schedules.length > 0) viewAll();
+        } else if (result.isDenied) {}
+    });
 }
 
 function addStyles() {
@@ -247,10 +277,14 @@ function viewAll() {
     }
 
     schedules = JSON.parse(localStorage.getItem('schedules_' + user.username)) || [];
+
     document.body.innerHTML = `
         <h1>All Schedules</h1>
-        <button onclick="start()">Back to Dashboard</button>
+        <button onclick="allItems = false; start()">Back to Dashboard</button>
         <div id="scheduleContainer"></div>
     `;
+
+    container = document.querySelector('#scheduleContainer');
+
     allData();
 }
