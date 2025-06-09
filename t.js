@@ -38,6 +38,7 @@ async function start() {
             <h1>Welcome, ${user.username}!</h1>
             <button onclick="newItem()">Add New Item</button>
             <button onclick="removeAll();">Remove all Items</button>
+            <button onclick="viewAll()">View All Items</button>
             <input type="date" id="datePicker" value="${pickedDate}" onchange="pickedDate = this.value; start();">
             <br>
             <div id="scheduleContainer"></div>
@@ -78,6 +79,26 @@ async function data() {
             </div>
         `;
         }
+    });
+    addStyles();
+    shouldRender();
+}
+
+async function allData() {
+    const container = document.querySelector('#scheduleContainer');
+    container.innerHTML = ''; // clear before showing all
+    schedules.forEach((schedule) => {
+        const { ending, starting, date, id, name, description } = schedule;
+        container.innerHTML += `
+            <div class="item">
+                <h2>${name}</h2>
+                <p>${description}</p>
+                <p>Date: ${date}</p>
+                <p>${starting ? 'Start Time: ' + starting : ''}</p>
+                <p>${ending ? 'End Time: ' + ending : ''}</p>
+                <button onclick="remove(${id})">Remove</button>
+            </div>
+        `;
     });
     addStyles();
     shouldRender();
@@ -164,14 +185,72 @@ function addStyles() {
   style.innerHTML = `
     #scheduleContainer {
       width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
     }
+
     .item {
-      display: inline-block;
       border: 3px solid #333;
-      padding: 8px 12px;
-      margin-bottom: 10px;
-      border-radius: 5px;
+      padding: 16px;
+      border-radius: 10px;
+      background-color: #e7f8e9;
+      width: 220px;
+      height: 250px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+    }
+
+    .item:hover {
+      transform: scale(1.02);
+    }
+
+    .item h2 {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      color: #245d2f;
+    }
+
+    .item p {
+      margin: 4px 0;
+      color: #3b3b3b;
+      font-size: 14px;
+    }
+
+    .item button {
+      margin-top: 10px;
+      padding: 8px;
+      background-color: white;
+      border: 2px solid #245d2f;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .item button:hover {
+      background-color: #cce5cc;
     }
   `;
   document.head.appendChild(style);
+}
+
+
+function viewAll() {
+    const user = JSON.parse(localStorage.getItem('savedUser'));
+    if (!user) {
+        alert('User not logged in');
+        return;
+    }
+
+    schedules = JSON.parse(localStorage.getItem('schedules_' + user.username)) || [];
+    document.body.innerHTML = `
+        <h1>All Schedules</h1>
+        <button onclick="start()">Back to Dashboard</button>
+        <div id="scheduleContainer"></div>
+    `;
+    allData();
 }
