@@ -320,49 +320,52 @@ function notifyAdd() {
 start();
 
 async function reminder() {
-    const user = JSON.parse(localStorage.getItem('savedUser'));
-    if (!user) alert('User not logged in');
-    if (!user) return;
-
-    const schedules = JSON.parse(localStorage.getItem('schedules_' + user.username)) || [];
-    const currentDate = new Date().toISOString().split('T')[0];
     const now = new Date();
 
+    // Request notification permission first
     if (Notification.permission === 'default') {
         const permission = await Notification.requestPermission();
-        if (permission !== 'granted') return;
+        if (permission !== 'granted') {
+            alert('Please enable notifications in your browser settings to receive reminders.');
+            return;
+        }
     } else if (Notification.permission === 'denied') {
+        alert('Please enable notifications in your browser settings to receive reminders.');
         return;
     }
 
-    let sentNotifications = JSON.parse(localStorage.getItem('sentNotifications')) || {};
+    const currentDate = now.toISOString().split('T')[0];
+
+    // Load sent notifications
+    let sent = JSON.parse(localStorage.getItem('sentNotifications')) || {};
 
     for (const schedule of schedules) {
         const { id, date, name, description, starting } = schedule;
 
-        if (date === currentDate && !sentNotifications[id]) {
-            if (starting) {
-                const [h, m] = starting.split(':').map(Number);
-                const startTime = new Date();
-                startTime.setHours(h, m, 0, 0);
+        if (sent[id]) continue;
+        if (date !== currentDate) continue;
 
-                const diff = Math.abs(now - startTime);
-                if (diff <= 60000) {
-                    new Notification(`Reminder: ${name}`, {
-                        body: description ? description : 'No description provided',
-                    });
-                    sentNotifications[id] = true;
-                }
-            } else {
+        if (starting) {
+            const [sh, sm] = starting.split(':').map(Number);
+            const target = new Date(now);
+            target.setHours(sh, sm, 0, 0);
+
+            const timeDiff = Math.abs(now - target);
+            if (timeDiff <= 60000) {
                 new Notification(`Reminder: ${name}`, {
-                    body: description ? description : 'No description provided',
+                    body: description || 'No description provided',
                 });
-                sentNotifications[id] = true;
+                sent[id] = true;
             }
+        } else {
+            new Notification(`Reminder: ${name}`, {
+                body: description || 'No description provided',
+            });
+            sent[id] = true;
         }
     }
 
-    localStorage.setItem('sentNotifications', JSON.stringify(sentNotifications));
+    localStorage.setItem('sentNotifications', JSON.stringify(sent));
 }
 
 setInterval(reminder, 5000);
