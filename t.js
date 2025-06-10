@@ -321,61 +321,47 @@ start();
 
 async function reminder() {
     const user = JSON.parse(localStorage.getItem('savedUser'));
-    if (!user) {
-        console.log("No user found");
-        return;
-    }
+    if (!user) return;
 
     const schedules = JSON.parse(localStorage.getItem('schedules_' + user.username)) || [];
     const currentDate = new Date().toISOString().split('T')[0];
     const now = new Date();
 
-    const currentTime = now.getHours().toString().padStart(2, '0') + ':' +
-                        now.getMinutes().toString().padStart(2, '0');
-
-    console.log("Current time:", currentTime);
-    console.log("Today's date:", currentDate);
-
     if (Notification.permission === 'default') {
         const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-            alert('Please enable notifications in your browser settings to receive reminders.');
-            return;
-        }
+        if (permission !== 'granted') return;
     } else if (Notification.permission === 'denied') {
-        alert('Please enable notifications in your browser settings to receive reminders.');
         return;
     }
+
+    let sentNotifications = JSON.parse(localStorage.getItem('sentNotifications')) || {};
 
     for (const schedule of schedules) {
         const { id, date, name, description, starting } = schedule;
 
-        console.log("Checking schedule:", schedule);
+        if (date === currentDate && !sentNotifications[id]) {
+            if (starting) {
+                const [h, m] = starting.split(':').map(Number);
+                const startTime = new Date();
+                startTime.setHours(h, m, 0, 0);
 
-        if (!variables[`notificationTitle_${id}`]) {
-            if (date === currentDate) {
-                if (starting) {
-                    console.log("Target time:", starting);
-                    if (starting === currentTime) {
-                        console.log("🔔 Sending notification for:", name);
-                        new Notification(`Reminder: ${name}`, {
-                            body: description ? 'Description: ' + description : 'No description provided',
-                        });
-
-                        variables[`notificationTitle_${id}`] = true;
-                    }
-                } else {
-                    console.log("🔔 Sending notification for:", name);
+                const diff = Math.abs(now - startTime);
+                if (diff <= 60000) {
                     new Notification(`Reminder: ${name}`, {
                         body: description ? description : 'No description provided',
                     });
-
-                    variables[`notificationTitle_${id}`] = true;
+                    sentNotifications[id] = true;
                 }
+            } else {
+                new Notification(`Reminder: ${name}`, {
+                    body: description ? description : 'No description provided',
+                });
+                sentNotifications[id] = true;
             }
         }
     }
-}
 
+    localStorage.setItem('sentNotifications', JSON.stringify(sentNotifications));
+}
 
 setInterval(reminder, 5000);
