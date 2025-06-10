@@ -321,6 +321,7 @@ start();
 
 async function reminder() {
     const user = JSON.parse(localStorage.getItem('savedUser'));
+    if (!user) alert('User not logged in');
     if (!user) return;
 
     const schedules = JSON.parse(localStorage.getItem('schedules_' + user.username)) || [];
