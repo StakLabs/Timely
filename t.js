@@ -4,6 +4,58 @@ window.removeAll = removeAll;
 window.viewAll = viewAll;
 window.addItem = addItem;
 
+const suggestions = {
+    'Early Morning': [
+        'Morning Yoga', 'Breakfast', 'Reading', 'Meditation', 'Stretching',
+        'Journaling', 'Plan the Day', 'Go for a Walk',
+        'Check News Headlines', 'Feed Pets', 'Water Plants'
+    ],
+    'Morning': [
+        'Work on Project', 'Team Meeting', 'Coffee Break', 'Review Emails',
+        'Check Industry News', 'Write Code', 'Design a Presentation', 'Brainstorm Ideas',
+        'Meet a Colleague', 'Review a Report', 'Listen to Business Podcast', 'Analyze Data',
+        'Respond to Client Queries', 'Take a Walk Outside', 'Sketch a UI Design',
+        'Research Productivity Hacks', 'Check Task Progress', 'Learn a New Skill',
+        'Do a 10-minute Workout', 'Write a Blog Post', 'Prepare Meeting Notes',
+        'Work on a Creative Task', 'Experiment with a New Work Style', 'Try a Pomodoro Session',
+        'Review Competitor Trends', 'Write a Business Proposal', 'Catch Up on Work Messages',
+        'Organize Work Desk', 'Prepare a Brief Presentation', 'Discuss a New Strategy',
+        'Research Latest Innovations', 'Improve Writing Skills', 'Review a Book Summary',
+        'Network with Colleagues', 'Take Detailed Notes on a Topic', 'Sketch Out a Concept',
+        'Listen to Classical Music', 'Research Investment Ideas', 'Plan a Work Strategy',
+        'Prepare a Spreadsheet', 'Try Digital Note-taking', 'Review Calendar Events',
+        'Read a Work-related Article', 'Watch a TED Talk', 'Create an Infographic',
+        'Write a Work-related Reflection', 'Test a New Work Tool', 'Review Personal Finance',
+        'Plan a Side Project', 'Start a Coding Challenge', 'Practice a Professional Skill',
+        'Analyze a Business Model', 'Organize Project Documents', 'Review a Portfolio',
+        'Catch Up on Industry Trends', 'Study Leadership Principles', 'Learn a Financial Tip',
+        'Plan a Knowledge-Sharing Session', 'Create a Productivity Guide', 'Try a Business Experiment'
+    ],
+    'Afternoon': [
+        'Lunch Break', 'Client Call', 'Report Writing', 'Go for a Walk', 'Reply to Emails',
+        'Read Industry News', 'Practice Public Speaking', 'Organize Files', 'Brainstorm Ideas',
+        'Listen to a Podcast', 'Try a Mindfulness Exercise', 'Work on a Creative Task', 'Do Some Sketching',
+        'Write an Article', 'Check Financial Markets', 'Review Meeting Notes', 'Plan Next Steps',
+        'Test a New Work Strategy', 'Listen to Relaxing Music', 'Check Off Tasks', 'Attend a Webinar',
+        'Try a Mental Puzzle', 'Call a Friend', 'Schedule Meetings', 'Research a New Skill',
+        'Build a Spreadsheet Model', 'Prepare a Sales Pitch', 'Write Down Key Takeaways', 'Plan an Event',
+        'Study a Foreign Language', 'Review Business Strategies', 'Create a Budget Tracker', 'Plan the Rest of the Day'
+    ],
+    'Evening': [
+        'Gym', 'Dinner with Family', 'Relaxation'
+    ],
+    'Night': [
+        'Watch a Movie', 'Prepare for Tomorrow', 'Sleep', 'Reflect on the Day', 'Read a Book'
+    ]
+};
+
+const currentTime = getCurrentTime();
+
+let timeSuggestions = JSON.parse(localStorage.getItem('timeSuggestions')) ? JSON.parse(localStorage.getItem('timeSuggestions')) : suggestions[currentTime];
+
+localStorage.setItem('suggestions', JSON.stringify(suggestions));
+localStorage.setItem('timeSuggestions', JSON.stringify(timeSuggestions));
+
 const variables = {};
 
 let listedItems;
@@ -129,16 +181,18 @@ async function allData() {
     shouldRender();
 }
 
-function newItem() {
+function newItem(defaultName) {
+    if (!defaultName) defaultName = '';
+    const currentDate = new Date().toISOString().split('T')[0];
     document.body.innerHTML = `
         <h2>Add New Schedule</h2>
         <form id="scheduleForm">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required>
+            <label for="name" value>Name:</label>
+            <input type="text" id="name" name="name" value="${defaultName}"required>
             <label for="description">Description:</label>
             <input type="text" id="description" name="description">
             <label for="date">Date:</label>
-            <input type="date" id="date" name="date" required>
+            <input type="date" id="date" name="date" value="${currentDate}" required>
             <br>
             <br>
             <label for="startTime">Start time:</label>
@@ -168,8 +222,13 @@ function addItem() {
     const starting = document.getElementById('startTime').value;
     const ending = document.getElementById('endTime').value;
 
+    const currentTime = getCurrentTime();
+    timeSuggestions.push(name);
+    localStorage.setItem('timeSuggestions', JSON.stringify(timeSuggestions));
+
+
     if (name && date) {
-        notifyAdd();
+        //notifyAdd();
         const newSchedule = {
             id: schedules.length + 1,
             name,
@@ -320,9 +379,22 @@ function notifyAdd() {
 start();
 
 async function reminder() {
+    const user = JSON.parse(localStorage.getItem('savedUser'));
+    if (!user) {
+        console.log("No user found");
+        return;
+    }
+
+    const schedules = JSON.parse(localStorage.getItem('schedules_' + user.username)) || [];
+    const currentDate = new Date().toISOString().split('T')[0];
     const now = new Date();
 
-    // Request notification permission first
+    const currentTime = now.getHours().toString().padStart(2, '0') + ':' +
+                        now.getMinutes().toString().padStart(2, '0');
+
+    console.log("Current time:", currentTime);
+    console.log("Today's date:", currentDate);
+
     if (Notification.permission === 'default') {
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
@@ -334,38 +406,79 @@ async function reminder() {
         return;
     }
 
-    const currentDate = now.toISOString().split('T')[0];
-
-    // Load sent notifications
-    let sent = JSON.parse(localStorage.getItem('sentNotifications')) || {};
-
     for (const schedule of schedules) {
         const { id, date, name, description, starting } = schedule;
 
-        if (sent[id]) continue;
-        if (date !== currentDate) continue;
+        console.log("Checking schedule:", schedule);
 
-        if (starting) {
-            const [sh, sm] = starting.split(':').map(Number);
-            const target = new Date(now);
-            target.setHours(sh, sm, 0, 0);
+        if (!variables[`notificationTitle_${id}`]) {
+            if (date === currentDate) {
+                if (starting) {
+                    console.log("Target time:", starting);
+                    if (starting === currentTime) {
+                        console.log("🔔 Sending notification for:", name);
+                        new Notification(`Reminder: ${name}`, {
+                            body: description ? description : 'No description provided',
+                        });
 
-            const timeDiff = Math.abs(now - target);
-            if (timeDiff <= 60000) {
-                new Notification(`Reminder: ${name}`, {
-                    body: description || 'No description provided',
-                });
-                sent[id] = true;
+                        variables[`notificationTitle_${id}`] = true;
+                    }
+                } else {
+                    console.log("🔔 Sending notification for:", name);
+                    new Notification(`Reminder: ${name}`, {
+                        body: description ? description : 'No description provided',
+                    });
+
+                    variables[`notificationTitle_${id}`] = true;
+                }
             }
-        } else {
-            new Notification(`Reminder: ${name}`, {
-                body: description || 'No description provided',
-            });
-            sent[id] = true;
         }
     }
-
-    localStorage.setItem('sentNotifications', JSON.stringify(sent));
 }
 
 setInterval(reminder, 5000);
+
+function getCurrentTime() {
+    const now = new Date();
+    let hours = now.getHours()
+    hours = Number(hours)
+    if (hours > 0 && hours < 4) {
+        return 'Early Morning';
+    } else if (hours >= 4 && hours < 12) {
+        return 'Morning';
+    } else if (hours >= 12 && hours < 17) {
+        return 'Afternoon';
+    } else if (hours >= 17 && hours < 20) {
+        return 'Evening';
+    } else {
+        return 'Night';
+    }
+}
+
+function smartSuggestionsTime() {
+    const currentTime = getCurrentTime();
+    const randomSuggestion = timeSuggestions[Math.floor(Math.random() * timeSuggestions.length)];
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'info',
+        title: `Timely Insight: May I suggest ${randomSuggestion}?`,
+        showConfirmButton: true,
+        confirmButtonText: 'Add Task',
+        showDenyButton: true,
+        denyButtonText: 'Dismiss',
+        timer: 10000,           // auto close after 10 seconds
+        timerProgressBar: true,
+        didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+        newItem(randomSuggestion);
+        } else if (result.isDenied) {}})
+};
+
+smartSuggestionsTime(); // initial call
+
+setInterval(smartSuggestionsTime, 3600000); // every hour
