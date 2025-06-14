@@ -24,8 +24,7 @@ const suggestions = {
 
 const currentTime = getCurrentTime();
 
-let pickedCat = 'Select Category';
-
+//let pickedCat = 'Select Category';
 
 const user = JSON.parse(localStorage.getItem('savedUser')) || null;
 
@@ -40,7 +39,7 @@ const variables = {};
 
 let listedItems;
 
-let category;
+let category = 'other';
 
 var container;
 
@@ -90,12 +89,6 @@ async function start() {
     } else {
         document.body.innerHTML = `
             <h1>Welcome, ${user.username}!</h1>
-            <select value="pickedCat" id=catpicker onchange="pickedCat = this.value; start();">
-                <option>Select Category</option>
-                <option value="Work">Work</option>
-                <option value="Personal">Personal</option>
-                <option value="Other">Other</option>
-            </select>
             <button onclick="newItem()">Add New Item</button>            
             <button onclick="newPreset()">Add New Preset</button>
             <button onclick="removeAll();">Remove all Items</button>
@@ -108,6 +101,13 @@ async function start() {
         data();
     }
 }
+
+/*<select value="pickedCat" id=catpicker onchange="pickedCat = this.value; start();">
+                <option>Select Category</option>
+                <option value="Work">Work</option>
+                <option value="Personal">Personal</option>
+                <option value="Other">Other</option>
+            </select>*/
 
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -128,12 +128,6 @@ function newPreset() {
             <label for="endTime">End time:</label>
             <input type="time" id="endTime" name="endTime">
             <br>
-            <select id=catpicker onchange="category = this.value;">
-                <option>Select Category</option>
-                <option value="Work">Work</option>
-                <option value="Personal">Personal</option>
-                <option value="Other">Other</option>
-            </select>
             <br>
             <button type="button" onclick="start()">Back to Schedules</button>
             <br>
@@ -142,6 +136,13 @@ function newPreset() {
         </form>
     `;
 }
+
+/*<select id=catpicker onchange="category = this.value;">
+                <option>Select Category</option>
+                <option value="Work">Work</option>
+                <option value="Personal">Personal</option>
+                <option value="Other">Other</option>
+            </select>*/
 
 function addPreset() {
     const user = JSON.parse(localStorage.getItem('savedUser'));
@@ -194,8 +195,8 @@ async function data() {
     let items = schedules.length;
     schedules.forEach((schedule) => {
         const { ending, starting, date, id, name, description } = schedule;
-        if (date == pickedDate) {
-            if (pickedCat) if (pickedCat == category) {
+        //if (date == pickedDate) {
+           // if (pickedCat) if (pickedCat == category) {
                 container.innerHTML += `
                     <br>
                     <div class="item">
@@ -203,12 +204,11 @@ async function data() {
                         <p>${description}</p>
                         <p>${starting ? 'Start Time: ' + starting : ''}</p>
                         <p>${ending ? 'End Time: ' + ending : ''}</p>
-                        <p>Category: ${category}</p>
                         <button onclick="remove(${id})">Remove</button>
                     </div>
                 `;
-            };
-        }
+            //};
+        //}
     });
     addStyles();
     shouldRender();
@@ -256,12 +256,6 @@ function newItem(name, description, starting, ending, category) {
             <label for="endTime">End time:</label>
             <input type="time" id="endTime" name="endTime" value="${ending}">
             <br>
-            <select id=categorySelector onchange="category = this.value;">
-                <option>Select Category</option>
-                <option value="Work">Work</option>
-                <option value="Personal">Personal</option>
-                <option value="Other">Other</option>
-            </select>
             <br>
             <button type="button" onclick="start()">Back to Schedules</button>
             <br>
