@@ -6,59 +6,41 @@ window.addItem = addItem;
 
 const suggestions = {
     'Early Morning': [
-        'Morning Yoga', 'Breakfast', 'Reading', 'Meditation', 'Stretching',
-        'Journaling', 'Plan the Day', 'Go for a Walk',
-        'Check News Headlines', 'Feed Pets', 'Water Plants'
+        'Morning Yoga', 'Breakfast', 'Reading'
     ],
     'Morning': [
-        'Work on Project', 'Team Meeting', 'Coffee Break', 'Review Emails',
-        'Check Industry News', 'Write Code', 'Design a Presentation', 'Brainstorm Ideas',
-        'Meet a Colleague', 'Review a Report', 'Listen to Business Podcast', 'Analyze Data',
-        'Respond to Client Queries', 'Take a Walk Outside', 'Sketch a UI Design',
-        'Research Productivity Hacks', 'Check Task Progress', 'Learn a New Skill',
-        'Do a 10-minute Workout', 'Write a Blog Post', 'Prepare Meeting Notes',
-        'Work on a Creative Task', 'Experiment with a New Work Style', 'Try a Pomodoro Session',
-        'Review Competitor Trends', 'Write a Business Proposal', 'Catch Up on Work Messages',
-        'Organize Work Desk', 'Prepare a Brief Presentation', 'Discuss a New Strategy',
-        'Research Latest Innovations', 'Improve Writing Skills', 'Review a Book Summary',
-        'Network with Colleagues', 'Take Detailed Notes on a Topic', 'Sketch Out a Concept',
-        'Listen to Classical Music', 'Research Investment Ideas', 'Plan a Work Strategy',
-        'Prepare a Spreadsheet', 'Try Digital Note-taking', 'Review Calendar Events',
-        'Read a Work-related Article', 'Watch a TED Talk', 'Create an Infographic',
-        'Write a Work-related Reflection', 'Test a New Work Tool', 'Review Personal Finance',
-        'Plan a Side Project', 'Start a Coding Challenge', 'Practice a Professional Skill',
-        'Analyze a Business Model', 'Organize Project Documents', 'Review a Portfolio',
-        'Catch Up on Industry Trends', 'Study Leadership Principles', 'Learn a Financial Tip',
-        'Plan a Knowledge-Sharing Session', 'Create a Productivity Guide', 'Try a Business Experiment'
+        'Work on Project', 'Team Meeting', 'Review Emails'
     ],
     'Afternoon': [
-        'Lunch Break', 'Client Call', 'Report Writing', 'Go for a Walk', 'Reply to Emails',
-        'Read Industry News', 'Practice Public Speaking', 'Organize Files', 'Brainstorm Ideas',
-        'Listen to a Podcast', 'Try a Mindfulness Exercise', 'Work on a Creative Task', 'Do Some Sketching',
-        'Write an Article', 'Check Financial Markets', 'Review Meeting Notes', 'Plan Next Steps',
-        'Test a New Work Strategy', 'Listen to Relaxing Music', 'Check Off Tasks', 'Attend a Webinar',
-        'Try a Mental Puzzle', 'Call a Friend', 'Schedule Meetings', 'Research a New Skill',
-        'Build a Spreadsheet Model', 'Prepare a Sales Pitch', 'Write Down Key Takeaways', 'Plan an Event',
-        'Study a Foreign Language', 'Review Business Strategies', 'Create a Budget Tracker', 'Plan the Rest of the Day'
+        'Lunch Break', 'Client Call', 'Report Writing'
     ],
     'Evening': [
         'Gym', 'Dinner with Family', 'Relaxation'
     ],
     'Night': [
-        'Watch a Movie', 'Prepare for Tomorrow', 'Sleep', 'Reflect on the Day', 'Read a Book'
+        'Watch a Movie', 'Prepare for Tomorrow', 'Read a Book'
     ]
 };
 
 const currentTime = getCurrentTime();
 
-let timeSuggestions = JSON.parse(localStorage.getItem('timeSuggestions')) ? JSON.parse(localStorage.getItem('timeSuggestions')) : suggestions[currentTime];
+let pickedCat = 'Select Category';
+
+
+const user = JSON.parse(localStorage.getItem('savedUser')) || null;
+
+let presets = JSON.parse(localStorage.getItem('presets_' + user.username)) || [];
+
+let timeSuggestions = JSON.parse(localStorage.getItem('timeSuggestions_' + currentTime + '_' + user.username)) || suggestions[currentTime];
 
 localStorage.setItem('suggestions', JSON.stringify(suggestions));
-localStorage.setItem('timeSuggestions', JSON.stringify(timeSuggestions));
+localStorage.setItem('timeSuggestions_' + currentTime + '_' + user.username, JSON.stringify(timeSuggestions));
 
 const variables = {};
 
 let listedItems;
+
+let category;
 
 var container;
 
@@ -100,6 +82,7 @@ async function start() {
         document.body.innerHTML = `
             <h1>Welcome, ${user.username}!</h1>
             <button onclick="newItem()">Add New Item</button>
+            <button onclick="newPreset()">Add New Preset</button>
             <br>
             <div id="scheduleContainer"></div>
         `
@@ -107,7 +90,14 @@ async function start() {
     } else {
         document.body.innerHTML = `
             <h1>Welcome, ${user.username}!</h1>
-            <button onclick="newItem()">Add New Item</button>
+            <select value="pickedCat" id=catpicker onchange="pickedCat = this.value; start();">
+                <option>Select Category</option>
+                <option value="Work">Work</option>
+                <option value="Personal">Personal</option>
+                <option value="Other">Other</option>
+            </select>
+            <button onclick="newItem()">Add New Item</button>            
+            <button onclick="newPreset()">Add New Preset</button>
             <button onclick="removeAll();">Remove all Items</button>
             <button <button onclick="allItems = true; viewAll();">View All Items</button>
             <input type="date" id="datePicker" value="${pickedDate}" onchange="pickedDate = this.value; start();">
@@ -121,6 +111,65 @@ async function start() {
 
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function newPreset() {
+    document.body.innerHTML = `
+        <h2>Add New Preset</h2>
+        <form id="scheduleForm">
+            <label for="name" value>Name:</label>
+            <input type="text" id="name" name="name" value=""required>
+            <label for="description">Description:</label>
+            <input type="text" id="description" name="description">
+            <br>
+            <br>
+            <label for="startTime">Start time:</label>
+            <input type="time" id="startTime" name="startTime" required>
+            <label for="endTime">End time:</label>
+            <input type="time" id="endTime" name="endTime">
+            <br>
+            <select id=catpicker onchange="category = this.value;">
+                <option>Select Category</option>
+                <option value="Work">Work</option>
+                <option value="Personal">Personal</option>
+                <option value="Other">Other</option>
+            </select>
+            <br>
+            <button type="button" onclick="start()">Back to Schedules</button>
+            <br>
+            <br>
+            <button type="button" id="Add" onclick="addPreset()">Add Preset</button>
+        </form>
+    `;
+}
+
+function addPreset() {
+    const user = JSON.parse(localStorage.getItem('savedUser'));
+    if (!user) {
+        alert('User not logged in');
+        return;
+    }
+
+    const name = document.getElementById('name').value;
+    const description = document.getElementById('description').value;
+    const starting = document.getElementById('startTime').value;
+    const ending = document.getElementById('endTime').value;
+
+    if (name) {
+        //notifyAdd();
+        const newPreset = {
+            id: timeSuggestions.length + 1,
+            name,
+            description: description || null,
+            starting: starting || null,
+            ending: ending || null
+        }
+        presets.push(newPreset);
+        localStorage.setItem('presets_' + user.username, JSON.stringify(presets));
+        start();
+    } else {
+        alert('Please fill in name field.');
+    }
 }
 
 function removeAll() {
@@ -146,16 +195,19 @@ async function data() {
     schedules.forEach((schedule) => {
         const { ending, starting, date, id, name, description } = schedule;
         if (date == pickedDate) {
-            container.innerHTML += `
-            <br>
-            <div class="item">
-                <h2>${name}</h2>
-                <p>${description}</p>
-                <p>${starting ? 'Start Time: ' + starting : ''}</p>
-                <p>${ending ? 'End Time: ' + ending : ''}</p>
-                <button onclick="remove(${id})">Remove</button>
-            </div>
-        `;
+            if (pickedCat) if (pickedCat == category) {
+                container.innerHTML += `
+                    <br>
+                    <div class="item">
+                        <h2>${name}</h2>
+                        <p>${description}</p>
+                        <p>${starting ? 'Start Time: ' + starting : ''}</p>
+                        <p>${ending ? 'End Time: ' + ending : ''}</p>
+                        <p>Category: ${category}</p>
+                        <button onclick="remove(${id})">Remove</button>
+                    </div>
+                `;
+            };
         }
     });
     addStyles();
@@ -181,30 +233,49 @@ async function allData() {
     shouldRender();
 }
 
-function newItem(defaultName) {
-    if (!defaultName) defaultName = '';
+function newItem(name, description, starting, ending, category) {
+    const user = JSON.parse(localStorage.getItem('savedUser'));
+    if (!name) name = '';
+    if (!description) description = '';
+    if (!starting) starting = null;
+    if (!ending) ending = null;
     const currentDate = new Date().toISOString().split('T')[0];
     document.body.innerHTML = `
         <h2>Add New Schedule</h2>
         <form id="scheduleForm">
             <label for="name" value>Name:</label>
-            <input type="text" id="name" name="name" value="${defaultName}"required>
+            <input type="text" id="name" name="name" value="${name}"required>
             <label for="description">Description:</label>
-            <input type="text" id="description" name="description">
+            <input type="text" id="description" name="description" value="${description}">
             <label for="date">Date:</label>
             <input type="date" id="date" name="date" value="${currentDate}" required>
             <br>
             <br>
             <label for="startTime">Start time:</label>
-            <input type="time" id="startTime" name="startTime" required>
+            <input type="time" id="startTime" name="startTime" value="${starting}" required>
             <label for="endTime">End time:</label>
-            <input type="time" id="endTime" name="endTime">
+            <input type="time" id="endTime" name="endTime" value="${ending}">
             <br>
+            <select id=categorySelector onchange="category = this.value;">
+                <option>Select Category</option>
+                <option value="Work">Work</option>
+                <option value="Personal">Personal</option>
+                <option value="Other">Other</option>
+            </select>
             <br>
             <button type="button" onclick="start()">Back to Schedules</button>
             <br>
             <br>
             <button type="button" id="Add" onclick="addItem()">Add Schedule</button>
+            <br>
+            <br>
+            <select id="presetSelector" onchange="
+                const p = presets.find(p => p.name === this.value);
+                if (p) newItem(p.name, p.description, p.starting, p.ending p.category);
+            ">
+                <option value="">Select Preset</option>
+                ${presets.map(preset => `<option value="${preset.name}">${preset.name}</option>`).join('')}
+            </select>
         </form>
     `;
 }
@@ -224,7 +295,7 @@ function addItem() {
 
     const currentTime = getCurrentTime();
     timeSuggestions.push(name);
-    localStorage.setItem('timeSuggestions', JSON.stringify(timeSuggestions));
+    localStorage.setItem('timeSuggestions_' + currentTime + '_' + user.username, JSON.stringify(timeSuggestions));
 
 
     if (name && date) {
@@ -392,8 +463,8 @@ async function reminder() {
     const currentTime = now.getHours().toString().padStart(2, '0') + ':' +
                         now.getMinutes().toString().padStart(2, '0');
 
-    console.log("Current time:", currentTime);
-    console.log("Today's date:", currentDate);
+    //console.log("Current time:", currentTime);
+    //onsole.log("Today's date:", currentDate);
 
     if (Notification.permission === 'default') {
         const permission = await Notification.requestPermission();
@@ -409,7 +480,7 @@ async function reminder() {
     for (const schedule of schedules) {
         const { id, date, name, description, starting } = schedule;
 
-        console.log("Checking schedule:", schedule);
+        //console.log("Checking schedule:", schedule);
 
         if (!variables[`notificationTitle_${id}`]) {
             if (date === currentDate) {
@@ -456,28 +527,50 @@ function getCurrentTime() {
 }
 
 function smartSuggestionsTime() {
-    const currentTime = getCurrentTime();
     const randomSuggestion = timeSuggestions[Math.floor(Math.random() * timeSuggestions.length)];
+
     Swal.fire({
         toast: true,
         position: 'top-end',
         icon: 'info',
-        title: `Timely Insight: May I suggest ${randomSuggestion}?`,
-        showConfirmButton: true,
-        confirmButtonText: 'Add Task',
-        showDenyButton: true,
-        denyButtonText: 'Dismiss',
-        timer: 10000,           // auto close after 10 seconds
+        html: `
+            <div class="ti-content">
+                <div class="ti-text">
+                    <b>Timely Insight:</b> May I suggest <i>${randomSuggestion}</i>?
+                </div>
+                <div class="ti-buttons">
+                    <button id="addTaskBtn" class="ti-btn green">Add</button>
+                    <button id="suggestAnotherBtn" class="ti-btn blue">Next</button>
+                    <button id="dismissBtn" class="ti-btn red">Dismiss</button>
+                </div>
+            </div>
+        `,
+        showConfirmButton: false,
+        customClass: {
+            popup: 'ti-toast'
+        },
+        timer: 10000,
         timerProgressBar: true,
         didOpen: (toast) => {
-        toast.addEventListener('mouseenter', Swal.stopTimer)
-        toast.addEventListener('mouseleave', Swal.resumeTimer)
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+
+            document.getElementById('addTaskBtn').addEventListener('click', () => {
+                Swal.close();
+                newItem(randomSuggestion);
+            });
+
+            document.getElementById('suggestAnotherBtn').addEventListener('click', () => {
+                Swal.close();
+                smartSuggestionsTime();
+            });
+
+            document.getElementById('dismissBtn').addEventListener('click', () => {
+                Swal.close();
+            });
         }
-    }).then((result) => {
-        if (result.isConfirmed) {
-        newItem(randomSuggestion);
-        } else if (result.isDenied) {}})
-};
+    });
+}
 
 smartSuggestionsTime(); // initial call
 
