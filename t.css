@@ -47,3 +47,23 @@ button {
 button:hover {
   transform: scale(1.05);
 }
+
+.swal2-toast.ti-toast {
+    width: auto !important;
+    max-width: 320px !important;
+    padding: 12px;
+}
+
+.ti-btn {
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: none;
+    color: white;
+    font-size: 13px;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.ti-btn.green { background-color: green; }
+.ti-btn.blue { background-color: #3085d6; }
+.ti-btn.red { background-color: #d33; }
