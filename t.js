@@ -265,7 +265,7 @@ function newItem(name, description, starting, ending, category) {
             <br>
             <select id="presetSelector" onchange="
                 const p = presets.find(p => p.name === this.value);
-                if (p) newItem(p.name, p.description, p.starting, p.ending p.category);
+                if (p) newItem(p.name, p.description, p.starting, p.ending, p.category);
             ">
                 <option value="">Select Preset</option>
                 ${presets.map(preset => `<option value="${preset.name}">${preset.name}</option>`).join('')}
