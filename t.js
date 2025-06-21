@@ -88,6 +88,7 @@ async function start() {
         shouldRender();
     } else {
         document.body.innerHTML = `
+            <a href="whatsapp://send?text=Timely%20changed%20my%20routine!%20Create%20an%20account%20here:%20https://ayaan-creator-web.github.io/Timely/" data-action="share/whatsapp/share">Refer Timely to a Friend!</a>
             <h1>Welcome, ${user.username}!</h1>
             <button onclick="newItem()">Add New Item</button>            
             <button onclick="newPreset()">Add New Preset</button>
@@ -173,21 +174,81 @@ function addPreset() {
     }
 }
 
-function removeAll() {
+async function removeAll() {
     const user = JSON.parse(localStorage.getItem('savedUser'));
     if (!user) return;
+
     Swal.fire({
         title: "Are you sure you want to remove all items?",
         showDenyButton: true,
         showCancelButton: false,
         confirmButtonText: "Remove",
         denyButtonText: `Cancel`
-        }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            schedules = [];
-            localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
-            start();
-        } else if (result.isDenied) {}
+            const passwordResult = await Swal.fire({
+                title: "Enter your password",
+                input: "password",
+                inputLabel: "Password",
+                inputPlaceholder: "Enter your password",
+                inputAttributes: {
+                    maxlength: "10",
+                    autocapitalize: "off",
+                    autocorrect: "off"
+                },
+                showCancelButton: true,
+                confirmButtonText: "Remove All",
+                showDenyButton: true,
+                denyButtonText: "Try another way"
+            });
+
+            if (passwordResult.isConfirmed) {
+                const password = passwordResult.value;
+                if (password === user.password) {
+                    schedules = [];
+                    localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
+                    start();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'All items removed successfully',
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Incorrect Password',
+                        text: 'Please try again.'
+                    });
+                }
+            } else if (passwordResult.isDenied) {
+                const emailResult = await Swal.fire({
+                    title: "Input email address",
+                    input: "email",
+                    inputLabel: "Your email address",
+                    inputPlaceholder: "Enter your email address",
+                    showCancelButton: true,
+                    confirmButtonText: "Remove All"
+                });
+
+                if (emailResult.isConfirmed) {
+                    const email = emailResult.value;
+                    if (email === user.email) {
+                        schedules = [];
+                        localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
+                        start();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'All items removed successfully',
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Incorrect or Invalid Email',
+                            text: 'Please try again.'
+                        });
+                    }
+                }
+            }
+        }
     });
 }
 
@@ -530,7 +591,7 @@ function smartSuggestionsTime() {
         html: `
             <div class="ti-content">
                 <div class="ti-text">
-                    <b>Timely Insight:</b> May I suggest <i>${randomSuggestion}</i>?
+                    <b>Timely Insight:</b> ${AIsuggestionORnot(randomSuggestion) ? 'You usually add ' : 'May I suggest: '} <i>${randomSuggestion}</i>${AIsuggestionORnot(randomSuggestion) ? ' around this time.' : '?'}
                 </div>
                 <div class="ti-buttons">
                     <button id="addTaskBtn" class="ti-btn green">Add</button>
@@ -569,3 +630,12 @@ function smartSuggestionsTime() {
 smartSuggestionsTime(); // initial call
 
 setInterval(smartSuggestionsTime, 3600000); // every hour
+
+function AIsuggestionORnot(suggestion) {
+    for (const period in suggestions) {
+        if (suggestions[period].includes(suggestion)) {
+            return false;
+        }
+    }
+    return true;
+}
