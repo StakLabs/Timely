@@ -38,7 +38,9 @@ const variables = JSON.parse(localStorage.getItem('variables')) || {};
 
 let listedItems;
 
-let category = 'other';
+let category;
+
+let displayedCategory = 'All';
 
 var container;
 
@@ -69,36 +71,53 @@ const html = `
 `
 
 async function start() {
-    if (!user) {
-        document.body.innerhtml = `
-            <h1>Error Code 402 - Payment Required, Not Logged In</h1>
-        `
-    }
+    const user = JSON.parse(localStorage.getItem('savedUser')) || null;
 
     if (!user) {
-        document.body.innerHTML = '<h1 style="color: red;">You are not logged in. Please log in to access this page.</h1>';
+        document.body.innerHTML = `
+            <h1>Error Code 402 - Payment Required, Not Logged In</h1>
+            <p>Please log in to access Timely.</p>
+            <button onclick="window.location.href='https://ayaan-creator-web.github.io/Timely/'">Go to Login</button>
+        `;
         return;
     }
 
     schedules = JSON.parse(localStorage.getItem('schedules_' + user.username)) || [];
 
-    if (schedules.length == 0) {
+    if (schedules.length === 0) {
         document.body.innerHTML = `
+            <button id="noticesButton" onclick="notices()" style="position: absolute; top: 20px; left: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">Notices</button>
+            <div id="timeDisplay"></div>
             <p id="xpDisplay">${getXP()} XP</p>
-            <h1>Welcome, ${user.username}!</h1>
+            <h1>Good ${getCurrentTime()}, ${user.username}!</h1>
             <div class="button-container">
+                <button onclick="startSmartSuggestions('time')">Smart Suggestions</button>
                 <button onclick="newItem()">Add New Item</button>
                 <button onclick="newPreset()">Add New Preset</button>
+                <button id="logout" onclick="logout();">Logout</button>
             </div>
             <div id="scheduleContainer"></div>
-        `
-        shouldRender();
+        `;
     } else {
         document.body.innerHTML = `
-            <a href="whatsapp://send?text=Timely%20changed%20my%20routine!%20Create%20an%20account%20here:%20https://ayaan-creator-web.github.io/Timely/" data-action="share/whatsapp/share">Refer Timely to a Friend!</a>
+            <button id="noticesButton" onclick="notices()" style="position: absolute; top: 20px; left: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">Notices</button>
+            <div id="timeDisplay"></div>
+            <br>
+            <select id="categorySelector" onchange="displayedCategory = this.value;">
+                <option value="All">All Categories</option>
+                <option value="work">Work</option>
+                <option value="personal">Personal</option>
+                <option value="shopping">Shopping</option>
+                <option value="todo">To-Do</option>
+                <option value="other">Other</option>
+            </select>
+            <br>
+            <a onclick="addXP(10);" href="whatsapp://send?text=Timely%20changed%20my%20routine!%20Create%20an%20account%20here:%20https://ayaan-creator-web.github.io/Timely/" data-action="share/whatsapp/share">Refer Timely to a Friend for 10 Bonus XP!</a>
             <p id="xpDisplay">${getXP()} XP</p>
-            <h1>Welcome, ${user.username}!</h1>
+            <h1>Good ${getCurrentTime()}, ${user.username}!</h1>
             <div class="button-container">
+                <button id="logout" onclick="logout();">Logout</button>
+                <button onclick="startSmartSuggestions('time')">Smart Suggestions</button>
                 <button onclick="newItem()">Add New Item</button>
                 <button onclick="newPreset()">Add New Preset</button>
                 <button onclick="removeAll();">Remove all Items</button>
@@ -108,16 +127,33 @@ async function start() {
             <div id="scheduleContainer"></div>
         `;
         container = document.querySelector('#scheduleContainer');
-        data();
+        data(displayedCategory);
     }
+
     if (document.getElementById('xpDisplay')) {
         setInterval(updateXpDisplay, 1000);
     }
-    // Call addGeneralStyles after the HTML is rendered
     addGeneralStyles();
+    addStyles();
 }
 
-// Update this function
+function logout() {
+    Swal.fire({
+        title: "Are you sure you want to logout?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, logout!",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+    }).then((result) => {
+        if (result.isConfirmed) {
+        localStorage.removeItem('savedUser');
+        window.location.href = 'https://ayaan-creator-web.github.io/Timely/';
+        }
+    });
+}
+
 function addGeneralStyles() {
     const style = document.createElement('style');
     style.innerHTML += `
@@ -126,14 +162,13 @@ function addGeneralStyles() {
             flex-wrap: wrap;
             gap: 10px;
             margin-bottom: 20px;
-            justify-content: center; /* Changed to center to balance the smaller buttons */
+            justify-content: center;
             align-items: center;
-            max-width: 500px; /* This still limits the overall width of the button row */
+            max-width: 500px;
         }
 
         .button-container button {
-            /* Adjusted width to make them less wide */
-            flex: 0 1 calc(45% - 5px); /* Changed from 50% to 45% */
+            flex: 0 1 calc(45% - 5px);
             padding: 8px 12px;
             font-size: 14px;
 
@@ -144,7 +179,7 @@ function addGeneralStyles() {
             cursor: pointer;
             transition: background-color 0.3s ease;
             box-sizing: border-box;
-            min-width: 100px; /* Reduced min-width further if needed for very small screens */
+            min-width: 100px;
         }
 
         .button-container button:hover {
@@ -157,7 +192,7 @@ function addGeneralStyles() {
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-
+    
 function newPreset() {
     document.body.innerHTML = `
         <h2>Add New Preset</h2>
@@ -172,6 +207,17 @@ function newPreset() {
             <input type="time" id="startTime" name="startTime" required>
             <label for="endTime">End time:</label>
             <input type="time" id="endTime" name="endTime">
+            <br>
+            <br>
+            <label for="categorySelector">Category:</label>
+            <br>
+            <select id="categorySelector" onchange="category = this.value;">
+                <option value="work">Work</option>
+                <option value="personal">Personal</option>
+                <option value="shopping">Shopping</option>
+                <option value="todo">To-Do</option>
+                <option value="other">Other</option>
+            </select>
             <br>
             <br>
             <button type="button" onclick="start()">Back to Schedules</button>
@@ -193,14 +239,16 @@ function addPreset() {
     const description = document.getElementById('description').value;
     const starting = document.getElementById('startTime').value;
     const ending = document.getElementById('endTime').value;
+    const itemCategory = document.getElementById('categorySelector').value;
 
     if (name) {
         const newPreset = {
-            id: timeSuggestions.length + 1,
+            id: presets.length + 1,
             name,
             description: description || null,
             starting: starting || null,
-            ending: ending || null
+            ending: ending || null,
+            category: itemCategory
         }
         presets.push(newPreset);
         localStorage.setItem('presets_' + user.username, JSON.stringify(presets));
@@ -288,19 +336,21 @@ async function removeAll() {
     });
 }
 
-async function data() {
+async function data(selectedCategory) {
     container.innerHTML = "";
 
-    const filteredSchedules = allItems ? schedules : schedules.filter(schedule => schedule.date === pickedDate);
+    const filteredSchedulesByDate = allItems ? schedules : schedules.filter(schedule => schedule.date === pickedDate);
+    const finalFilteredSchedules = selectedCategory === 'All'
+        ? filteredSchedulesByDate
+        : filteredSchedulesByDate.filter(schedule => schedule.category === selectedCategory);
 
-    filteredSchedules.forEach((schedule) => {
-        const { ending, starting, date, id, name, description } = schedule;
-
-        const checked = JSON.parse(localStorage.getItem(`checkbox_${id}`)) || false;
+    finalFilteredSchedules.forEach((schedule) => {
+        const { ending, starting, date, id, name, description, category: itemCategory } = schedule;
 
         container.innerHTML += `
             <br>
-            <div class="item" id="item_${id}"> <div class="checkbox-wrapper">
+            <div class="item" id="item_${id}">
+                <div class="checkbox-wrapper">
                     <input id="checkbox_${id}" type="checkbox"
                         onchange="if (this.checked) { localStorage.setItem('checkbox_${id}', true); addXP(5); done(${id}); } else { localStorage.removeItem('checkbox_${id}'); addXP(-5); done(${id}); }">
                 </div>
@@ -308,28 +358,34 @@ async function data() {
                 <p>${description}</p>
                 <p>${starting ? 'Start Time: ' + starting : ''}</p>
                 <p>${ending ? 'End Time: ' + ending : ''}</p>
+                <p>Category: ${itemCategory}</p>
+                <button onclick="newItem('${name.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}', '${starting || ''}', '${ending || ''}', '${itemCategory}', '${date}', ${id})">Edit</button>
                 <button onclick="remove(${id})">Remove</button>
             </div>
         `;
     });
 
-    filteredSchedules.forEach((schedule) => {
+    finalFilteredSchedules.forEach((schedule) => {
         const { id } = schedule;
         const checked = JSON.parse(localStorage.getItem(`checkbox_${id}`)) || false;
         const checkbox = document.getElementById("checkbox_" + id);
         if (checkbox) checkbox.checked = checked;
 
-        // Call done() here to apply the initial 'done' or 'not-done' class on load
+
         done(id);
     });
 
     addStyles();
 }
 
-async function allData() {
+async function allData(selectedCategory = 'All') {
     container.innerHTML = '';
-    schedules.forEach((schedule) => {
-        const { ending, starting, date, id, name, description } = schedule;
+    const filteredSchedules = selectedCategory === 'All'
+        ? schedules
+        : schedules.filter(schedule => schedule.category === selectedCategory);
+
+    filteredSchedules.forEach((schedule) => {
+        const { ending, starting, date, id, name, description, category } = schedule;
         container.innerHTML += `
             <div class="item" id="item_${id}"> <div class="checkbox-wrapper">
                     <input id="checkbox_${id}" type="checkbox"
@@ -340,61 +396,79 @@ async function allData() {
                 <p>Date: ${date}</p>
                 <p>${starting ? 'Start Time: ' + starting : ''}</p>
                 <p>${ending ? 'End Time: ' + ending : ''}</p>
+                <p>Category: ${category}</p>
                 <button onclick="remove(${id})">Remove</button>
             </div>
         `;
     });
 
-    schedules.forEach((schedule) => {
+    filteredSchedules.forEach((schedule) => {
         const { id } = schedule;
         const checked = JSON.parse(localStorage.getItem(`checkbox_${id}`)) || false;
         const checkbox = document.getElementById("checkbox_" + id);
         if (checkbox) checkbox.checked = checked;
 
-        // Call done() here to apply the initial 'done' or 'not-done' class on load
+
         done(id);
     });
 
     addStyles();
 }
 
-function newItem(name, description, starting, ending, category) {
+function newItem(name, description, starting, ending, category, date, id) {
     const user = JSON.parse(localStorage.getItem('savedUser'));
     if (!user) {
         alert('User not logged in');
         return;
     }
-    if (!name) name = '';
-    if (!description) description = '';
-    if (!starting) starting = null;
-    if (!ending) ending = null;
+
+    if (typeof name === 'undefined') name = '';
+    if (typeof description === 'undefined') description = '';
+    if (typeof starting === 'undefined') starting = null;
+    if (typeof ending === 'undefined') ending = null;
+    if (typeof category === 'undefined') category = 'other';
     const currentDate = new Date().toISOString().split('T')[0];
+    if (typeof date === 'undefined') date = currentDate;
+
+    const itemId = id ? id : null;
+
     document.body.innerHTML = `
-        <h2>Add New Schedule</h2>
+        <h2>${itemId ? 'Edit Schedule' : 'Add New Schedule'}</h2>
         <form id="scheduleForm">
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" value="${name}" required>
             <label for="description">Description:</label>
             <textarea id="description" name="description">${description}</textarea>
             <label for="date">Date:</label>
-            <input type="date" id="date" name="date" value="${currentDate}" required>
+            <input type="date" id="date" name="date" value="${date}" required>
             <br>
             <br>
             <label for="startTime">Start time:</label>
-            <input type="time" id="startTime" name="startTime" value="${starting}" required>
+            <input type="time" id="startTime" name="startTime" value="${starting || ''}" required>
             <label for="endTime">End time:</label>
-            <input type="time" id="endTime" name="endTime" value="${ending}">
+            <input type="time" id="endTime" name="endTime" value="${ending || ''}">
+            <br>
+            <br>
+            <label for="categorySelector">Category:</label>
+            <br>
+            <select id="categorySelector" name="categorySelector">
+                <option value="work" ${category === 'work' ? 'selected' : ''}>Work</option>
+                <option value="personal" ${category === 'personal' ? 'selected' : ''}>Personal</option>
+                <option value="shopping" ${category === 'shopping' ? 'selected' : ''}>Shopping</option>
+                <option value="todo" ${category === 'todo' ? 'selected' : ''}>To-Do</option>
+                <option value="other" ${category === 'other' ? 'selected' : ''}>Other</option>
+            </select>
             <br>
             <br>
             <button type="button" onclick="start()">Back to Schedules</button>
             <br>
             <br>
-            <button type="button" id="Add" onclick="addItem()">Add Schedule</button>
+            <button type="button" id="Add" onclick="remove(${id}, false); addItem(); start();">${itemId ? 'Update Schedule' : 'Add Schedule'}</button>
             <br>
             <br>
             <select id="presetSelector" onchange="
                 const p = presets.find(p => p.name === this.value);
-                if (p) newItem(p.name, p.description, p.starting, p.ending, p.category);
+                if (p) newItem(p.name, p.description, p.starting, p.ending, p.category, document.getElementById('date').value, ${itemId || 'null'});
             ">
                 <option value="">Select Preset</option>
                 ${presets.map(preset => `<option value="${preset.name}">${preset.name}</option>`).join('')}
@@ -415,7 +489,7 @@ function addItem() {
     const date = document.getElementById('date').value;
     const starting = document.getElementById('startTime').value;
     const ending = document.getElementById('endTime').value;
-
+    const itemCategory = document.getElementById('categorySelector').value;
     const currentTime = getCurrentTime();
     timeSuggestions.push(name);
     localStorage.setItem('timeSuggestions_' + currentTime + '_' + user.username, JSON.stringify(timeSuggestions));
@@ -428,7 +502,8 @@ function addItem() {
             description: description || "No description provided",
             date: date,
             starting: starting || null,
-            ending: ending || null
+            ending: ending || null,
+            category: itemCategory || 'other'
         }
         schedules.push(newSchedule);
         localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
@@ -439,50 +514,53 @@ function addItem() {
     }
 }
 
-function shouldRender() {
-
-}
-
-function remove(id) {
-    const user = JSON.parse(localStorage.getItem('savedUser'));
-    if (!user) return;
-    Swal.fire({
-        title: "Are you sure you want to remove this item?",
-        showDenyButton: true,
-        showCancelButton: false,
-        confirmButtonText: "Remove",
-        denyButtonText: `Cancel`
-        }).then((result) => {
-        if (result.isConfirmed) {
-            localStorage.setItem(`checkbox_${id}`, false);
-            localStorage.setItem('deletedItem', JSON.stringify(schedules.filter(schedule => schedule.id === id)));
+function remove(id, swalAlert) {
+    if (typeof swalAlert === 'undefined') swalAlert = true;
+    if (swalAlert) {
+        const user = JSON.parse(localStorage.getItem('savedUser'));
+        if (!user) return;
+        Swal.fire({
+            title: "Are you sure you want to remove this item?",
+            showDenyButton: true,
+            showCancelButton: false,
+            confirmButtonText: "Remove",
+            denyButtonText: `Cancel`
+            }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.setItem(`checkbox_${id}`, false);
+                localStorage.setItem('deletedItem', JSON.stringify(schedules.filter(schedule => schedule.id === id)));
+                schedules = schedules.filter(schedule => schedule.id !== id);
+                localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
+                start();
+                Swal.fire({
+                    toast: true,
+                    text: "Item removed successfully",
+                    position: 'bottom',
+                    timer: 5000,
+                    timerProgressBar: true,
+                    showConfirmButton: true,
+                    confirmButtonText: 'Undo',
+                    confirmButtonColor: '#3085d6',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const deletedItem = JSON.parse(localStorage.getItem('deletedItem'));
+                        if (deletedItem && deletedItem.length > 0) {
+                            schedules.push(deletedItem[0]);
+                            localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
+                            localStorage.removeItem('deletedItem');
+                            start();
+                        }
+                    }
+                })
+                if (allItems && schedules.length > 0) viewAll();
+            } else if (result.isDenied) {}
+        });
+    } else {
             schedules = schedules.filter(schedule => schedule.id !== id);
             localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
-            start();
-            Swal.fire({
-                toast: true,
-                text: "Item removed successfully",
-                position: 'bottom',
-                timer: 5000,
-                timerProgressBar: true,
-                showConfirmButton: true,
-                confirmButtonText: 'Undo',
-                confirmButtonColor: '#3085d6',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const deletedItem = JSON.parse(localStorage.getItem('deletedItem'));
-                    if (deletedItem && deletedItem.length > 0) {
-                        schedules.push(deletedItem[0]);
-                        localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
-                        localStorage.removeItem('deletedItem');
-                        start();
-                    }
-                }
-            })
-            if (allItems && schedules.length > 0) viewAll();
-        } else if (result.isDenied) {}
-    });
+    }
 }
+
 
 function addStyles() {
   const style = document.createElement('style');
@@ -579,6 +657,14 @@ function viewAll() {
 
     document.body.innerHTML = `
         <h1>All Schedules</h1>
+        <select id="categorySelector" onchange="allData(this.value);">
+            <option value="All">All Categories</option>
+            <option value="work">Work</option>
+            <option value="personal">Personal</option>
+            <option value="shopping">Shopping</option>
+            <option value="todo">To-Do</option>
+            <option value="other">Other</option>
+        </select>
         <button onclick="allItems = false; start()">Back to Dashboard</button>
         <div id="scheduleContainer"></div>
     `;
@@ -709,8 +795,13 @@ function smartSuggestionsTime() {
     });
 }
 
-!user ? start() : smartSuggestionsTime();
-
+function startSmartSuggestions(type) {
+    if (type === 'time') {
+        !user ? start() : smartSuggestionsTime();
+    } else {
+        console.warn("Invalid type for smart suggestions.");
+    }
+}
 setInterval(!user ? start : smartSuggestionsTime, 3600000);
 
 function AIsuggestionORnot(suggestion) {
@@ -767,6 +858,55 @@ function done(id) {
     }
 }
 
-/*Updates in 1.4.0
-    undo delete
+async function displayTime() {
+    while (true) {
+        await delay(100);
+        const now = new Date();
+        const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('timeDisplay').innerText = time;
+    }
+}
+
+async function notices() {
+    const now = new Date();
+    const todaysDate = now.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    document.body.innerHTML = `
+        <h1>Notices for ${todaysDate}</h1>
+        <p>We are excited to announce that Update 2.0.0 will be released sometime in the next two weeks.<br>
+        Update 2.0.0 will be our first major update, but there is a few important details that need considering.<br>
+        Device compatibility may break, as we will be re-writing ours whole system, and all user data, <br>
+        like XP and schedules, will also be reset. However, by contacting us before the update, and including<br>
+        data important to you (like your amount of XP), we may be able to restore your data temporarily before the update.
+        <br>
+        <br>
+        Update 1.5.0 has arrived with some exciting new features! From bonus XP and a notices page, to a time<br>
+        sensitive homepage and even item editing! We hope that this update will bring you a big benefit, as we have put our<br>
+        time and effort into this update.
+        <br>
+        <br>
+        Update 2.0.0 is coming soon, but what will actually happen in this update? There will be a few tiny benefits in this update, which<br>
+        we will not be revealing yet, but we can say that a possible cloud sync support is being discussed and experimented with!<br>
+        This means you will be able to access all of your data accross your devices!
+        <br>
+        <br>
+        <strong>That's all the notices for now! Come back another time for more!</strong></p>
+        <button onclick="start()">Back to homepage</button>
+    `
+    await delay(1000);
+    //notices();
+}
+
+displayTime();
+
+/* Update 1.5.0
+    Edit items
+    notices
+    time controlled home screen
+    bonus xp from refferal
+    logout confirmation
+    whatsapp group
 */
