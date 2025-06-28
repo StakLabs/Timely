@@ -876,29 +876,34 @@ async function notices() {
     });
     document.body.innerHTML = `
         <h1>Notices for ${todaysDate}</h1>
-        <p>We are excited to announce that Update 2.0.0 will be released sometime in the next two weeks.<br>
-        Update 2.0.0 will be our first major update, but there is a few important details that need considering.<br>
-        Device compatibility may break, as we will be re-writing ours whole system, and all user data, <br>
-        like XP and schedules, will also be reset. However, by contacting us before the update, and including<br>
-        data important to you (like your amount of XP), we may be able to restore your data temporarily before the update.
+        <p>Thank you for your patience for Timely 2.0.0! We aim to release this new version around the start<br>
+        of July. All current user data will be removed, meaning that your account will be reset. As mentioned in the<br>
+        previous notice, all user data will be erased as we will be re-writing how the app works
         <br>
         <br>
-        Update 1.5.0 has arrived with some exciting new features! From bonus XP and a notices page, to a time<br>
-        sensitive homepage and even item editing! We hope that this update will bring you a big benefit, as we have put our<br>
-        time and effort into this update.
+        This will be one of our last calls for user data. If you would like to be able to restore data, please<br>
+        contact us at the same email you signed up for Timely with, and provide us any account details you<br>
+        want to be saved and restored.
         <br>
-        <br>
-        Update 2.0.0 is coming soon, but what will actually happen in this update? There will be a few tiny benefits in this update, which<br>
-        we will not be revealing yet, but we can say that a possible cloud sync support is being discussed and experimented with!<br>
-        This means you will be able to access all of your data accross your devices!
+        <br>.
+        We are currently working on Update 2.0.0 and are progressing well! We expect for the update to release earlier<br>
+        than expected, perhaps tomorrow or early July.
         <br>
         <br>
         <strong>That's all the notices for now! Come back another time for more!</strong></p>
         <button onclick="start()">Back to homepage</button>
     `
     await delay(1000);
-    //notices();
+    localStorage.setItem('notices2', true);
 }
+
+async function openNotices() {
+    if (!localStorage.getItem('notices2')) await delay(5000); notices();
+}
+
+notices();
+
+openNotices();
 
 displayTime();
 
