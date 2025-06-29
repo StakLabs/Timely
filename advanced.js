@@ -66,7 +66,7 @@ const html = `
 //backend work
 
 async function getSchedulesByEmail(email) {
-    return await fetch(`http://localhost:3000/items/${encodeURIComponent(email)}`)
+    return await fetch(`https://timely-zc0n.onrender.com/items/${encodeURIComponent(email)}`)
         .then(response => response.json())
         .catch(error => {
             console.error('Error:', error);
@@ -76,7 +76,7 @@ async function getSchedulesByEmail(email) {
 
 async function deleteScheduleById(id) {
     try {
-        const response = await fetch(`http://localhost:3000/items/${id}`, {
+        const response = await fetch(`https://timely-zc0n.onrender.com/items/${id}`, {
             method: 'DELETE'
         });
         //start();
@@ -106,7 +106,7 @@ async function addScheduleToBackend(schedule) {
     };
 
     try {
-        const response = await fetch('http://localhost:3000/items', {
+        const response = await fetch('https://timely-zc0n.onrender.com/items/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
