@@ -506,7 +506,7 @@ function newItem(name, description, starting, ending, category, date, id) {
     if (typeof category === 'undefined') category = 'other';
     const currentDate = new Date().toISOString().split('T')[0];
     if (typeof date === 'undefined') date = currentDate;
-    debugger;
+    //debugger;
 
     const itemId = id ? id : null;
 
@@ -912,21 +912,16 @@ async function addXP(amount) {
         console.warn("User not logged in, cannot add XP.");
         return;
     }
-    let xp = JSON.parse(localStorage.getItem('xp_' + user.username)) || 0;
+    let xp = await getXP(); // get XP from backend
     xp += amount;
     localStorage.setItem('xp_' + user.username, JSON.stringify(xp));
 
     // Update XP in backend
     try {
-        await fetch(`https://timely-zc0n.onrender.com/users/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: user.email,
-                xp: xp
-            })
+        await fetch(`http://localhost:3306/users/${encodeURIComponent(user.email)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ xp })
         });
     } catch (error) {
         console.error('Failed to update XP in backend:', error);
@@ -941,6 +936,29 @@ async function addXP(amount) {
         });
     }
     updateXpDisplay();
+}
+
+async function getXP() {
+    const user = JSON.parse(localStorage.getItem('savedUser'));
+    if (!user) return 0;
+    try {
+        const response = await fetch(`http://localhost:3306/users/${encodeURIComponent(user.email)}`);
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('xp_' + user.username, JSON.stringify(data.xp));
+            return data.xp;
+        }
+    } catch (error) {
+        console.error('Failed to fetch XP from backend:', error);
+    }
+}
+
+async function updateXpDisplay() {
+    const xpElement = document.getElementById('xpDisplay');
+    if (xpElement) {
+        const xp = await getXP();
+        xpElement.textContent = `${xp} XP`;
+    }
 }
 
 async function getXP() {
