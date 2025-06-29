@@ -57,6 +57,17 @@ app.put('/users/:id', (req, res) => {
     });
 });
 
+app.get('/users/:email', (req, res) => {
+    db.query('SELECT xp FROM users WHERE email = ?', [req.params.email], (err, results) => {
+        if (err) return res.status(500).json(err);
+        if (results.length > 0) {
+            res.json({ xp: results[0].xp });
+        } else {
+            res.json({ xp: 0 }); // or handle user not found differently
+        }
+    });
+});
+
 // Start server
 app.listen(3000, () => {
     //console.log(`Server is running on http://localhost:${port}`);
