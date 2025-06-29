@@ -49,6 +49,13 @@ app.delete('/items/:id', (req, res) => {
         res.json({ message: 'Item deleted' });
     });
 });
+app.put('/users/:id', (req, res) => {
+    const { xp, email } = req.body;
+    db.query('UPDATE users SET xp = ? WHERE email = ?', [xp, id], (err) => {
+        if (err) return res.status(500).json(err);
+        res.json({ message: 'xp updated', amount: xp, email: email });
+    });
+});
 
 // Start server
 app.listen(3000, () => {
