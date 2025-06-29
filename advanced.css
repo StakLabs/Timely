@@ -1,0 +1,180 @@
+body {
+    background: linear-gradient(to right, #bbdefb, #90caf9);
+    color: #1a237e;
+    font-family: "Quicksand", sans-serif;
+    transition: all 0.3s ease;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* This centers all direct children of body */
+    text-align: center;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+#xpDisplay, a[data-action="share/whatsapp/share"] {
+    margin-bottom: 10px;
+}
+
+/* Specific styling for the main action buttons and date input */
+body > button,
+body > input[type="date"] {
+    width: auto;
+    min-width: 180px;
+    max-width: 250px;
+    margin: 8px auto; /* Centered horizontally */
+    display: block;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    font-weight: 600;
+}
+
+h1 + button {
+    margin-top: 15px;
+}
+
+/* Updated #scheduleContainer styling */
+#scheduleContainer {
+    width: 100%;
+    max-width: 960px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* This handles the spacing between items */
+    justify-content: center; /* This centers the items within the container */
+    margin-top: 20px; /* Add some top margin to separate it from the date picker */
+    /* Make sure this is not overridden by dynamic styles */
+}
+
+/* Updated .item styling */
+.item {
+    border: 3px solid #90CAF9;
+    padding: 16px;
+    border-radius: 10px;
+    background-color: #E3F2FD;
+    width: 220px;
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    box-sizing: border-box;
+    /* Ensure no conflicting margins are applied here */
+}
+
+.item:hover {
+    transform: scale(1.02);
+}
+
+.item h2 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    color: #1976D2;
+}
+
+.item p {
+    margin: 4px 0;
+    color: #424242;
+    font-size: 14px;
+}
+
+.item button {
+    margin-top: 10px;
+    padding: 8px;
+    background-color: white;
+    border: 2px solid #2196F3;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.item button:hover {
+    background-color: #E3F2FD;
+}
+
+.item {
+    position: relative;
+}
+
+.checkbox-wrapper {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+.item button[onclick^="remove("] {
+    background-color: #EF9A9A;
+    color: white;
+    border: 2px solid #E57373;
+}
+
+.item button[onclick^="remove("]:hover {
+    background-color: #E57373;
+}
+
+input[type="date"] {
+    padding: 8px 12px;
+    border: 2px solid #64b5f6;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #1a237e;
+    background-color: white;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+input[type="date"]:hover {
+    border-color: #42a5f5;
+}
+
+#xpDisplay {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #0d47a1;
+    margin-bottom: 15px;
+}
+
+a[data-action="share/whatsapp/share"] {
+    color: #1976D2;
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: fit-content;
+}
+
+a[data-action="share/whatsapp/share"]:hover {
+    text-decoration: underline;
+}
+
+p#xpDisplay + h1 {
+    margin-top: 0;
+}
+
+.ti-btn.green { background-color: #4CAF50; color: white; border: none; padding: 5px 20px; border-radius: 8px; margin-top: 2px; }
+.ti-btn.blue { background-color: #3085d6; color: white; border: none; padding: 5px 20px; border-radius: 8px; margin-top: 2px; }
+.ti-btn.red { background-color: #d33; color: white; border: none; padding: 5px 20px; border-radius: 8px; margin-top: 2px; }
+
+.done {
+    opacity: 0.5;
+}
+
+.notDone {
+    opacity: 1;
+}
+
+#logout:hover {
+    background-color: #f44336;
+    color: white;
+}
