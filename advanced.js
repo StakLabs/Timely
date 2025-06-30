@@ -951,26 +951,7 @@ async function getXP() {
     } catch (error) {
         console.error('Failed to fetch XP from backend:', error);
     }
-}
-
-async function updateXpDisplay() {
-    const xpElement = document.getElementById('xpDisplay');
-    if (xpElement) {
-        const xp = await getXP();
-        xpElement.textContent = `${xp} XP`;
-    }
-}
-
-async function getXP() {
-    try {
-        const response = await fetch(`https://timely-zc0n.onrender.com/users/${encodeURIComponent(user.email)}`);
-        if (response.ok) {
-            const data = await response.json();
-            return data.xp;
-        }
-    } catch (error) {
-        console.error('Failed to fetch XP from backend:', error);
-    }
+    return JSON.parse(localStorage.getItem('xp_' + user.username)) || 0;
 }
 
 async function updateXpDisplay() {
