@@ -49,11 +49,12 @@ app.delete('/items/:id', (req, res) => {
         res.json({ message: 'Item deleted' });
     });
 });
-app.put('/users/:id', (req, res) => {
-    const { xp, email } = req.body;
-    db.query('UPDATE users SET xp = ? WHERE email = ?', [xp, id], (err) => {
+
+app.put('/users/:email', (req, res) => {
+    const { xp } = req.body;
+    db.query('UPDATE users SET xp = ? WHERE email = ?', [xp, req.params.email], (err) => {
         if (err) return res.status(500).json(err);
-        res.json({ message: 'xp updated', amount: xp, email: email });
+        res.json({ message: 'xp updated', amount: xp, email: req.params.email });
     });
 });
 
@@ -69,8 +70,8 @@ app.get('/users/:email', (req, res) => {
 });
 
 // Start server
-app.listen(3000, () => {
+app.listen(3306, () => {
     //console.log(`Server is running on http://localhost:${port}`);
-    console.log(`Server is running on http://localhost:3000`);
+    console.log(`Server is running... awaiting MySQL connection`);
 });
 //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
