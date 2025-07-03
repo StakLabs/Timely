@@ -1,3 +1,4 @@
+//
 const suggestions = {
     'Early Morning': [
         'Morning Yoga', 'Breakfast', 'Reading'
@@ -90,6 +91,22 @@ async function deleteScheduleById(id) {
     }
 }
 
+async function deleteAll() {
+    try {
+        const response = await fetch(`https://timely-zc0n.onrender.com/items/`, {
+            method: 'DELETE'
+        });
+        //start();
+        if (!response.ok) {
+            throw new Error('Failed to delete schedule');
+        }
+        return await response.json(); // or just return true if your API doesn't return data
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
+    }
+}
+
 async function addScheduleToBackend(schedule) {
     // Convert to required backend format
     const formattedSchedule = {
@@ -130,7 +147,7 @@ async function start() {
         document.body.innerHTML = `
             <h1>Error Code 402 - Payment Required, Not Logged In</h1>
             <p>Please log in to access Timely.</p>
-            <button onclick="window.location.href='https://ayaan-creator-web.github.io/Timely/'">Go to Login</button>
+            <button onclick="window.location.href='https://www.timelypro.online/login.html'">Go to Login</button>
         `;
         return;
     }
@@ -168,7 +185,7 @@ async function start() {
             <div id="timeDisplay"></div>
             <br>
             <br>
-            <a onclick="addXP(10);" href="whatsapp://send?text=Timely%20changed%20my%20routine!%20Create%20an%20account%20here:%20https://ayaan-creator-web.github.io/Timely/" data-action="share/whatsapp/share">Refer Timely to a Friend for 10 Bonus XP!</a>
+            <a onclick="addXP(10);" href="whatsapp://send?text=Timely%20changed%20my%20routine!%20Create%20an%20account%20here:%20https://www.timelypro.online/" data-action="share/whatsapp/share">Refer Timely to a Friend for 10 Bonus XP!</a>
             <p id="xpDisplay">${getXP()} XP</p>
             <h1>Good ${getCurrentTime()}, ${user.username}!</h1>
             <div class="button-container">
@@ -207,7 +224,7 @@ function logout() {
     }).then((result) => {
         if (result.isConfirmed) {
         localStorage.removeItem('savedUser');
-        window.location.href = 'https://ayaan-creator-web.github.io/Timely/';
+        window.location.href = 'https://www.timelypro.online/';
         }
     });
 }
@@ -347,13 +364,8 @@ async function removeAll() {
             if (passwordResult.isConfirmed) {
                 const password = passwordResult.value;
                 if (password === user.password) {
-                    schedules = [];
-                    localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
+                    await deleteAll();
                     start();
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'All items removed successfully',
-                    });
                 } else {
                     Swal.fire({
                         icon: 'error',
@@ -374,13 +386,8 @@ async function removeAll() {
                 if (emailResult.isConfirmed) {
                     const email = emailResult.value;
                     if (email === user.email) {
-                        schedules = [];
-                        localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
+                        await deleteAll();
                         start();
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'All items removed successfully',
-                        });
                     } else {
                         Swal.fire({
                             icon: 'error',
@@ -500,7 +507,7 @@ function newItem(name, description, starting, ending, category, date, id) {
     if (typeof category === 'undefined') category = 'other';
     const currentDate = new Date().toISOString().split('T')[0];
     if (typeof date === 'undefined') date = currentDate;
-    debugger;
+    //debugger;
 
     const itemId = id ? id : null;
 
@@ -900,15 +907,27 @@ function AIsuggestionORnot(suggestion) {
     return true;
 }
 
-function addXP(amount) {
+async function addXP(amount) {
     const user = JSON.parse(localStorage.getItem('savedUser'));
     if (!user) {
         console.warn("User not logged in, cannot add XP.");
         return;
     }
-    let xp = JSON.parse(localStorage.getItem('xp_' + user.username)) || 0;
+    let xp = await getXP(); // get XP from backend
     xp += amount;
     localStorage.setItem('xp_' + user.username, JSON.stringify(xp));
+
+    // Update XP in backend
+    try {
+        await fetch(`https://timely-zc0n.onrender.com/users/${encodeURIComponent(user.email)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ xp })
+        });
+    } catch (error) {
+        console.error('Failed to update XP in backend:', error);
+    }
+
     if (amount > 0) {
         Swal.fire({
             title: `+${amount} XP!`,
@@ -920,18 +939,27 @@ function addXP(amount) {
     updateXpDisplay();
 }
 
-function getXP() {
+async function getXP() {
     const user = JSON.parse(localStorage.getItem('savedUser'));
-    if (!user) {
-        return 0;
+    if (!user) return 0;
+    try {
+        const response = await fetch(`https://timely-zc0n.onrender.com/users/${encodeURIComponent(user.email)}`);
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('xp_' + user.username, JSON.stringify(data.xp));
+            return data.xp;
+        }
+    } catch (error) {
+        console.error('Failed to fetch XP from backend:', error);
     }
     return JSON.parse(localStorage.getItem('xp_' + user.username)) || 0;
 }
 
-function updateXpDisplay() {
+async function updateXpDisplay() {
     const xpElement = document.getElementById('xpDisplay');
     if (xpElement) {
-        xpElement.textContent = `${getXP()} XP`;
+        const xp = await getXP();
+        xpElement.textContent = `${xp} XP`;
     }
 }
 
