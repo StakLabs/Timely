@@ -1,3 +1,4 @@
+//
 const suggestions = {
     'Early Morning': [
         'Morning Yoga', 'Breakfast', 'Reading'
@@ -918,7 +919,7 @@ async function addXP(amount) {
 
     // Update XP in backend
     try {
-        await fetch(`https://timely-zc0n.onrender.com/${encodeURIComponent(user.email)}`, {
+        await fetch(`https://timely-zc0n.onrender.com/users/${encodeURIComponent(user.email)}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ xp })
@@ -942,7 +943,7 @@ async function getXP() {
     const user = JSON.parse(localStorage.getItem('savedUser'));
     if (!user) return 0;
     try {
-        const response = await fetch(`https://timely-zc0n.onrender.com/${encodeURIComponent(user.email)}`);
+        const response = await fetch(`https://timely-zc0n.onrender.com/users/${encodeURIComponent(user.email)}`);
         if (response.ok) {
             const data = await response.json();
             localStorage.setItem('xp_' + user.username, JSON.stringify(data.xp));
