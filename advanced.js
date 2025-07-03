@@ -147,7 +147,7 @@ async function start() {
         document.body.innerHTML = `
             <h1>Error Code 402 - Payment Required, Not Logged In</h1>
             <p>Please log in to access Timely.</p>
-            <button onclick="window.location.href='https://ayaan-creator-web.github.io/Timely/'">Go to Login</button>
+            <button onclick="window.location.href='https://www.timelypro.online//'">Go to Login</button>
         `;
         return;
     }
@@ -185,7 +185,7 @@ async function start() {
             <div id="timeDisplay"></div>
             <br>
             <br>
-            <a onclick="addXP(10);" href="whatsapp://send?text=Timely%20changed%20my%20routine!%20Create%20an%20account%20here:%20https://ayaan-creator-web.github.io/Timely/" data-action="share/whatsapp/share">Refer Timely to a Friend for 10 Bonus XP!</a>
+            <a onclick="addXP(10);" href="whatsapp://send?text=Timely%20changed%20my%20routine!%20Create%20an%20account%20here:%20https://www.timelypro.online/" data-action="share/whatsapp/share">Refer Timely to a Friend for 10 Bonus XP!</a>
             <p id="xpDisplay">${getXP()} XP</p>
             <h1>Good ${getCurrentTime()}, ${user.username}!</h1>
             <div class="button-container">
@@ -224,7 +224,7 @@ function logout() {
     }).then((result) => {
         if (result.isConfirmed) {
         localStorage.removeItem('savedUser');
-        window.location.href = 'https://ayaan-creator-web.github.io/Timely/';
+        window.location.href = 'https://www.timelypro.online/';
         }
     });
 }
