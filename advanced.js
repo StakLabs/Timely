@@ -943,7 +943,7 @@ async function getXP() {
     const user = JSON.parse(localStorage.getItem('savedUser'));
     if (!user) return 0;
     try {
-        const response = await fetch(`http://localhost:3306/users/${encodeURIComponent(user.email)}`);
+        const response = await fetch(`https://timely-zc0n.onrender.com/${encodeURIComponent(user.email)}`);
         if (response.ok) {
             const data = await response.json();
             localStorage.setItem('xp_' + user.username, JSON.stringify(data.xp));
