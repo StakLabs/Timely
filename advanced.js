@@ -1,4 +1,3 @@
-//
 const suggestions = {
     'Early Morning': [
         'Morning Yoga', 'Breakfast', 'Reading'
@@ -147,7 +146,7 @@ async function start() {
         document.body.innerHTML = `
             <h1>Error Code 402 - Payment Required, Not Logged In</h1>
             <p>Please log in to access Timely.</p>
-            <button onclick="window.location.href='https://www.timelypro.online//'">Go to Login</button>
+            <button onclick="window.location.href='https://www.timelypro.online/login.html'">Go to Login</button>
         `;
         return;
     }
