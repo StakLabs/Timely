@@ -1,3 +1,4 @@
+//
 const suggestions = {
     'Early Morning': [
         'Morning Yoga', 'Breakfast', 'Reading'
