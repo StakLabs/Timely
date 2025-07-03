@@ -919,7 +919,7 @@ async function addXP(amount) {
 
     // Update XP in backend
     try {
-        await fetch(`http://localhost:3306/users/${encodeURIComponent(user.email)}`, {
+        await fetch(`https://timely-zc0n.onrender.com/${encodeURIComponent(user.email)}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ xp })
