@@ -157,6 +157,7 @@ async function start() {
 
     if (schedules.length === 0) {
         document.body.innerHTML = `
+            <p>${cloudStatus()}</p>
             <button id="noticesButton" onclick="notices()" style="position: absolute; top: 20px; left: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">Notices</button>
             <div id="timeDisplay"></div>
             <p id="xpDisplay">${getXP()} XP</p>
