@@ -202,7 +202,6 @@ async function start() {
             <div id="scheduleContainer"></div>
         </div>
         `;
-        cloudStatus();
        //container = document.querySelector('#scheduleContainer');
         // get a selected value of dropdown here assign into variable
        // const selectedCeategory = document.getElementById('categorySelector').value;
@@ -217,9 +216,6 @@ async function start() {
 }
 
 function cloudStatus() {
-    document.querySelector('home').addEventListener('click', () => {
-        start();
-    });
     return navigator.onLine ? 'Cloud Sync is on' : 'Cloud sync is off'
 }
 
