@@ -7,12 +7,13 @@ const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 
-const port = 3306;
+const port = process.env.PORT || 3000;
+
 const databaseName = 'sql12786360';
 // MySQL connection
 const db = mysql.createConnection({
     host: 'sql12.freesqldatabase.com',
-    port: port, // default MySQL port
+    port: 3306, // default MySQL port
     user: 'sql12786360',
     password: 'bYC3cnLz68', // update if needed
     database: databaseName
@@ -70,8 +71,8 @@ app.get('/users/:email', (req, res) => {
 });
 
 // Start server
-app.listen(3306, () => {
+app.listen(port, () => {
     //console.log(`Server is running on http://localhost:${port}`);
-    console.log(`Server is running... awaiting MySQL connection`);
+    console.log(`Server is running on port ${port}... awaiting MySQL connection`);
 });
 //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
