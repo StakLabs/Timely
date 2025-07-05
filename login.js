@@ -24,6 +24,10 @@ let users = [{
     username: 'Iron Woman',
     email: 'nicezara@gmail.com',
     password: 'apple'
+}, {
+    username: 'Emaan',
+    email: 'emaan.khalique@gmail.com',
+    password: 'nothing'
 }];
 /*
 [{
@@ -39,6 +43,7 @@ let users = [{
 
 async function signin() {
     email = document.getElementById('email').value
+    email = email.toLowerCase();
     password = document.getElementById('password').value
     username = document.getElementById('username').value
     //fetched data
