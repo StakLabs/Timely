@@ -72,6 +72,19 @@ async function getSchedulesByEmail(email) {
         });
 }
 
+async function getAllItems() {
+    try {
+        const response = await fetch('https://timely-zc0n.onrender.com/items');
+        if (!response.ok) {
+            throw new Error('Failed to fetch all items');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching all items:', error);
+        return [];
+    }
+}   
+
 async function deleteScheduleById(id) {
     try {
         const response = await fetch(`https://timely-zc0n.onrender.com/items/${id}`, {
@@ -550,8 +563,9 @@ async function addItem() {
     localStorage.setItem('timeSuggestions_' + currentTime + '_' + user.username, JSON.stringify(timeSuggestions));
 
     let maxId = 0;
-    if (Array.isArray(schedules) && schedules.length > 0) {
-        maxId = Math.max(...schedules.map(s => Number(s.id) || 0));
+    let allSchedules = await getAllItems() || [];
+    if (Array.isArray(allSchedules) && allSchedules.length > 0) {
+        maxId = Math.max(...allSchedules.map(s => Number(s.id) || 0));
     }
     const newId = maxId + 1;
 
