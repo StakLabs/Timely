@@ -152,7 +152,7 @@ async function start() {
         return;
     }
 
-    schedules = await getSchedulesByEmail(user.email);
+    schedules = await getSchedulesByEmail(user.email) || [];
     //console.log("Schedules:", schedules);
 
     if (schedules.length === 0) {
@@ -202,7 +202,7 @@ async function start() {
        //container = document.querySelector('#scheduleContainer');
         // get a selected value of dropdown here assign into variable
        // const selectedCeategory = document.getElementById('categorySelector').value;
-       data();
+       data(schedules);
     }
 
     if (document.getElementById('xpDisplay')) {
@@ -401,7 +401,7 @@ async function removeAll() {
     });
 }
 
-async function data(selectedCategory) {
+async function data(schedules) {
     //selectedCategory = selectedCategory.toLowerCase();
 
     const filteredSchedulesByDate = allItems ? schedules : schedules.filter(schedule => (new Date(schedule.itemDate).toLocaleDateString()).replaceAll('/', '-')
