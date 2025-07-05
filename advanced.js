@@ -214,6 +214,7 @@ async function start() {
     }
     addGeneralStyles();
     addStyles();
+    await delay(5000);
     start();
 }
 
