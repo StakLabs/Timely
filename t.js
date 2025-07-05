@@ -161,7 +161,7 @@ async function start() {
                 <button onclick="startSmartSuggestions('time')">Smart Suggestions</button>
                 <button onclick="newItem()">Add New Item</button>
                 <button onclick="newPreset()">Add New Preset</button>
-                <button onclick="void(0);">Schedule</button> <button id="logout" onclick="logout();">Logout</button>
+                <button id="logout" onclick="logout();">Logout</button>
             </div>
             <div id="scheduleContainer"></div>
         `;
@@ -181,7 +181,7 @@ async function start() {
                 <button onclick="newPreset()">Add Preset</button>
                 <button onclick="removeAll();">Remove all Items</button>
                 <button onclick="allItems = true; viewAll();">View All Items</button>
-                <button onclick="void(0);">Schedule</button> </div>
+            </div>
             <input type="date" id="datePicker" value="${pickedDate}" onchange="pickedDate = this.value; start();">
             <div id="scheduleContainer"></div>
         `;
