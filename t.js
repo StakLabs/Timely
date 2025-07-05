@@ -991,21 +991,11 @@ async function notices() {
     });
     document.body.innerHTML = `
         <h1>Notices for ${todaysDate}</h1>
-        <p>Thank you for your patience for Timely 2.0.0! We aim to release this new version around the start<br>
-        of July. All current user data will be removed, meaning that your account will be reset. As mentioned in the<br>
-        previous notice, all user data will be erased as we will be re-writing how the app works
+        <p>Timely 2.0.0 is here! Experience a reimagined scheduling app with powerful Cloud Sync. Your data is now <br> securely stored and accessible anywhere, anytime. To ensure a seamless transition and robust performance, <br> all previous user data has been reset. This was necessary for the new system's stability. Find us at <br> our new domain: <a href="https://timelypro.online" target="_blank">https://timelypro.online</a>. Save this link for future access.</p>
+        <p>We've optimized performance and refined the user interface for a more enjoyable and efficient daily scheduling experience. Explore <br> new features and enhanced speed, discovering a smarter way to manage your time. Design tweaks improve readability <br> and workflow. Our commitment to user experience is paramount, with improvements based on your valuable feedback. We <br> encourage you to explore the new interface. More exciting features are coming soon!</p>
+        <p>Thank you for being part of the Timely community! We're excited about this new chapter, helping you schedule <br> smarter. Your feedback is invaluable; please reach out with questions or suggestions. We thrive on community input <br> to make Timely the ultimate tool. For inquiries, bug reports, or feature requests, our support team is ready. <br>
         <br>
-        <br>
-        This will be one of our last calls for user data. If you would like to be able to restore data, please<br>
-        contact us at the same email you signed up for Timely with, and provide us any account details you<br>
-        want to be saved and restored.
-        <br>
-        <br>.
-        We are currently working on Update 2.0.0 and are progressing well! We expect for the update to release earlier<br>
-        than expected, perhaps tomorrow or early July.
-        <br>
-        <br>
-        <strong>That's all the notices for now! Come back another time for more!</strong></p>
+        <strong>That's all the notices for now! We will keep you updated.</strong></p>
         <button onclick="start()">Back to homepage</button>
     `
     await delay(1000);
