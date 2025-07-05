@@ -28,6 +28,13 @@ app.get('/', (req, res) => {
     res.send('API is working');
 });
 
+app.get('/items', (req, res) => {
+    db.query('SELECT * FROM items', (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json(results);
+    });
+});
+
 // Get one student
 app.get('/items/:email', (req, res) => {
     db.query('SELECT * FROM items WHERE email = ?', [req.params.email], (err, results) => {
