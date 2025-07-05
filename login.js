@@ -28,6 +28,10 @@ let users = [{
     username: 'Emaan',
     email: 'emaan.khalique@gmail.com',
     password: 'nothing'
+}, {
+    username: 'Wasiullah Qureshi',
+    email: 'wasiullahqureshi@gmail.com',
+    password: 'hi'
 }];
 /*
 [{
