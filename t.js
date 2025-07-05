@@ -109,7 +109,7 @@ async function addScheduleToBackend(schedule) {
         itemDescription: schedule.description || "No description provided",
         email: schedule.email,
         itemEnd: schedule.ending || null,
-        id: schedule.id, // Re-added this line based on previous logic
+        id: schedule.id,
         itemName: schedule.name,
         itemStart: schedule.starting || null,
         username: schedule.username,
@@ -518,7 +518,7 @@ function newItem(name, description, starting, ending, category, date, id) {
             <button type="button" onclick="start()">Back to Schedules</button>
             <br>
             <br>
-            <button type="button" id="Add" onclick="remove(${id}, false); addItem(); start();">${itemId ? 'Update Schedule' : 'Add Schedule'}</button>
+            <button type="button" id="Add" onclick="remove(${id}, false); addItem();">${itemId ? 'Update Schedule' : 'Add Schedule'}</button>
             <br>
             <br>
             <select id="presetSelector" onchange="
@@ -935,8 +935,7 @@ async function notices() {
         <br>
         This will be one of our last calls for user data. If you would like to be able to restore data, please<br>
         contact us at the same email you signed up for Timely with, and provide us any account details you<br>
-        want to be saved and restored.
-        <br>
+        want to be saved and restored.<br>
         <br>.
         We are currently working on Update 2.0.0 and are progressing well! We expect for the update to release earlier<br>
         than expected, perhaps tomorrow or early July.
