@@ -157,7 +157,6 @@ async function start() {
 
     if (schedules.length === 0) {
         document.body.innerHTML = `
-            <p>${cloudStatus()}</p>
             <button id="noticesButton" onclick="notices()" style="position: absolute; top: 20px; left: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">Notices</button>
             <div id="timeDisplay"></div>
             <p id="xpDisplay">${getXP()} XP</p>
@@ -182,8 +181,6 @@ async function start() {
             </select>
         */
         document.body.innerHTML = `
-        <div id="home">
-            <p>${cloudStatus()}</p>
             <button id="noticesButton" onclick="notices()" style="position: absolute; top: 20px; left: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">Notices</button>
             <div id="timeDisplay"></div>
             <br>
@@ -201,7 +198,6 @@ async function start() {
             </div>
             <input type="date" id="datePicker" value="${pickedDate}" onchange="pickedDate = this.value; start();">
             <div id="scheduleContainer"></div>
-        </div>
         `;
        //container = document.querySelector('#scheduleContainer');
         // get a selected value of dropdown here assign into variable
@@ -214,10 +210,6 @@ async function start() {
     }
     addGeneralStyles();
     addStyles();
-}
-
-function cloudStatus() {
-    return navigator.onLine ? 'Cloud Sync is on' : 'Cloud sync is off'
 }
 
 function logout() {
@@ -1030,6 +1022,4 @@ displayTime();
 
 /* Update 2.0.0
     Cloud Sync using Backend
-    Easy to remember domain
-    Cloud sync status
 */
