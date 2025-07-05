@@ -1,4 +1,3 @@
-//
 const suggestions = {
     'Early Morning': [
         'Morning Yoga', 'Breakfast', 'Reading'
@@ -64,8 +63,6 @@ const html = `
     </html>
 `
 
-//backend work
-
 async function getSchedulesByEmail(email) {
     return await fetch(`https://timely-zc0n.onrender.com/items/${encodeURIComponent(email)}`)
         .then(response => response.json())
@@ -80,11 +77,10 @@ async function deleteScheduleById(id) {
         const response = await fetch(`https://timely-zc0n.onrender.com/items/${id}`, {
             method: 'DELETE'
         });
-        //start();
         if (!response.ok) {
             throw new Error('Failed to delete schedule');
         }
-        return await response.json(); // or just return true if your API doesn't return data
+        return await response.json();
     } catch (error) {
         console.error('Error:', error);
         return null;
@@ -96,11 +92,10 @@ async function deleteAll() {
         const response = await fetch(`https://timely-zc0n.onrender.com/items/`, {
             method: 'DELETE'
         });
-        //start();
         if (!response.ok) {
             throw new Error('Failed to delete schedule');
         }
-        return await response.json(); // or just return true if your API doesn't return data
+        return await response.json();
     } catch (error) {
         console.error('Error:', error);
         return null;
@@ -108,17 +103,16 @@ async function deleteAll() {
 }
 
 async function addScheduleToBackend(schedule) {
-    // Convert to required backend format
     const formattedSchedule = {
         itemCategory: schedule.category || 'other',
         itemDate: schedule.date,
         itemDescription: schedule.description || "No description provided",
         email: schedule.email,
         itemEnd: schedule.ending || null,
-        id: schedule.id,
+        id: schedule.id, // Re-added this line based on previous logic
         itemName: schedule.name,
         itemStart: schedule.starting || null,
-        username: schedule.username, // Make sure to include username and password if needed
+        username: schedule.username,
         password: schedule.password
     };
 
@@ -131,11 +125,13 @@ async function addScheduleToBackend(schedule) {
             body: JSON.stringify(formattedSchedule)
         });
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Failed to add schedule: ${response.status} - ${errorText}`);
             throw new Error('Failed to add schedule');
         }
         return await response.json();
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error in addScheduleToBackend:', error);
         return null;
     }
 }
@@ -152,8 +148,8 @@ async function start() {
         return;
     }
 
-    schedules = await getSchedulesByEmail(user.email) || [];
-    //console.log("Schedules:", schedules);
+    const fetchedSchedules = await getSchedulesByEmail(user.email);
+    schedules = Array.isArray(fetchedSchedules) ? fetchedSchedules : [];
 
     if (schedules.length === 0) {
         document.body.innerHTML = `
@@ -170,16 +166,6 @@ async function start() {
             <div id="scheduleContainer"></div>
         `;
     } else {
-        /*
-            <select id="categorySelector" onchange="data(this.value)">
-                <option value="All">All Categories</option>
-                <option value="work">Work</option>
-                <option value="personal">Personal</option>
-                <option value="shopping">Shopping</option>
-                <option value="todo">To-Do</option>
-                <option value="other">Other</option>
-            </select>
-        */
         document.body.innerHTML = `
             <button id="noticesButton" onclick="notices()" style="position: absolute; top: 20px; left: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">Notices</button>
             <div id="timeDisplay"></div>
@@ -199,10 +185,7 @@ async function start() {
             <input type="date" id="datePicker" value="${pickedDate}" onchange="pickedDate = this.value; start();">
             <div id="scheduleContainer"></div>
         `;
-       //container = document.querySelector('#scheduleContainer');
-        // get a selected value of dropdown here assign into variable
-       // const selectedCeategory = document.getElementById('categorySelector').value;
-       data(schedules);
+       data();
     }
 
     if (document.getElementById('xpDisplay')) {
@@ -401,13 +384,12 @@ async function removeAll() {
     });
 }
 
-async function data(schedules) {
-    //selectedCategory = selectedCategory.toLowerCase();
-
+async function data() {
+    container = document.querySelector('#scheduleContainer');
+    container.innerHTML = '';
     const filteredSchedulesByDate = allItems ? schedules : schedules.filter(schedule => (new Date(schedule.itemDate).toLocaleDateString()).replaceAll('/', '-')
          === (new Date(pickedDate).toLocaleDateString()).replaceAll('/', '-'));
-    console.log(filteredSchedulesByDate);
-    //debugger;
+    
     filteredSchedulesByDate.forEach((schedule) => {
         const id = schedule.id;
         const name = schedule.itemName;
@@ -417,7 +399,6 @@ async function data(schedules) {
         const starting = schedule.itemStart;
         const ending = schedule.itemEnd;
         let category = schedule.itemCategory;
-        container = document.querySelector('#scheduleContainer');
         category = category.toLowerCase();
         container.innerHTML += `
             <div class="item" id="item_${id}"> <div class="checkbox-wrapper">
@@ -435,12 +416,11 @@ async function data(schedules) {
         `;
     });
 
-    finalFilteredSchedules.forEach((schedule) => {
+    filteredSchedulesByDate.forEach((schedule) => {
         const { id } = schedule;
         const checked = JSON.parse(localStorage.getItem(`checkbox_${id}`)) || false;
         const checkbox = document.getElementById("checkbox_" + id);
         if (checkbox) checkbox.checked = checked;
-
 
         done(id);
     });
@@ -448,14 +428,11 @@ async function data(schedules) {
     addStyles();
 }
 
-async function allData(selectedCategory = 'All') {
+async function allData() {
+    container = document.querySelector('#scheduleContainer');
     container.innerHTML = '';
-    /*const filteredSchedules = selectedCategory === 'All'
-        ? schedules
-        : schedules.filter(schedule => schedule.category === selectedCategory);*/
     let filteredSchedules = schedules;
     filteredSchedules.forEach((schedule) => {
-        //const { ending, starting, date, id, name, description, category } = schedule;
         const id = schedule.id;
         const name = schedule.itemName;
         let description = schedule.itemDescription || 'No description provided  ';
@@ -470,7 +447,7 @@ async function allData(selectedCategory = 'All') {
                 </div>
                 <h2>${name}</h2>
                 <p>${description || 'No description provided'}</p>
-                <p>Date: ${(new Date(date).toLocaleDateString()).replaceAll('/', '-')/*.replace('T14:00:00.000Z', '')*/}</p>
+                <p>Date: ${(new Date(date).toLocaleDateString()).replaceAll('/', '-')}</p>
                 <p>${starting ? 'Start Time: ' + starting : ''}</p>
                 <p>${ending ? 'End Time: ' + ending : ''}</p>
                 <p>Category: ${category}</p>
@@ -507,7 +484,6 @@ function newItem(name, description, starting, ending, category, date, id) {
     if (typeof category === 'undefined') category = 'other';
     const currentDate = new Date().toISOString().split('T')[0];
     if (typeof date === 'undefined') date = currentDate;
-    //debugger;
 
     const itemId = id ? id : null;
 
@@ -573,7 +549,6 @@ async function addItem() {
     timeSuggestions.push(name);
     localStorage.setItem('timeSuggestions_' + currentTime + '_' + user.username, JSON.stringify(timeSuggestions));
 
-    // Find the max id in current schedules
     let maxId = 0;
     if (Array.isArray(schedules) && schedules.length > 0) {
         maxId = Math.max(...schedules.map(s => Number(s.id) || 0));
@@ -589,7 +564,7 @@ async function addItem() {
             starting: starting || null,
             ending: ending || null,
             category: itemCategory || 'other',
-            email: user.email, // if needed by backend
+            email: user.email,
             username: user.username,
             password: user.password
         };
@@ -617,40 +592,15 @@ async function remove(id, swalAlert) {
             }).then(async (result) => {
             if (result.isConfirmed) {
                 localStorage.setItem(`checkbox_${id}`, false);
-                //localStorage.setItem('deletedItem', JSON.stringify(schedules.filter(schedule => schedule.id === id)));
-                /*schedules = schedules.filter(schedule => schedule.id !== id);
-                localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));*/
                 deleteScheduleById(id);
                 schedules = await getSchedulesByEmail(user.email);
                 start();
-                /*Swal.fire({
-                    toast: true,
-                    text: "Item removed successfully",
-                    position: 'bottom',
-                    timer: 5000,
-                    timerProgressBar: true,
-                    showConfirmButton: true,
-                    confirmButtonText: 'Undo',
-                    confirmButtonColor: '#3085d6',
-                }).then((result) => {a
-                    if (result.isConfirmed) {
-                        const deletedItem = JSON.parse(localStorage.getItem('deletedItem'));
-                        if (deletedItem && deletedItem.length > 0) {
-                            schedules.push(deletedItem[0]);
-                            localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
-                            localStorage.removeItem('deletedItem');
-                            start();
-                        }
-                    }
-                })*/
                 if (allItems && schedules.length > 0) viewAll();
             } else if (result.isDenied) {}
         });
     } else {
             deleteScheduleById(id);
             start();
-            /*schedules = schedules.filter(schedule => schedule.id !== id);
-            localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));*/
     }
 }
 
@@ -747,24 +697,12 @@ async function viewAll() {
 
     schedules = await getSchedulesByEmail(user.email);
 
-    /*
-        <select id="categorySelector" onchange="allData(this.value);">
-            <option value="All">All Categories</option>
-            <option value="work">Work</option>
-            <option value="personal">Personal</option>
-            <option value="shopping">Shopping</option>
-            <option value="todo">To-Do</option>
-            <option value="other">Other</option>
-        </select>
-    */
-
     document.body.innerHTML = `
         <h1>All Schedules</h1>
         <button onclick="allItems = false; start()">Back to Dashboard</button>
         <div id="scheduleContainer"></div>
     `;
 
-    container = document.querySelector('#scheduleContainer');
     allData();
 }
 
@@ -913,11 +851,10 @@ async function addXP(amount) {
         console.warn("User not logged in, cannot add XP.");
         return;
     }
-    let xp = await getXP(); // get XP from backend
+    let xp = await getXP();
     xp += amount;
     localStorage.setItem('xp_' + user.username, JSON.stringify(xp));
 
-    // Update XP in backend
     try {
         await fetch(`https://timely-zc0n.onrender.com/users/${encodeURIComponent(user.email)}`, {
             method: 'PUT',
@@ -991,11 +928,21 @@ async function notices() {
     });
     document.body.innerHTML = `
         <h1>Notices for ${todaysDate}</h1>
-        <p>Timely 2.0.0 is here! Experience a reimagined scheduling app with powerful Cloud Sync. Your data is now <br> securely stored and accessible anywhere, anytime. To ensure a seamless transition and robust performance, <br> all previous user data has been reset. This was necessary for the new system's stability. Find us at <br> our new domain: <a href="https://timelypro.online" target="_blank">https://timelypro.online</a>. Save this link for future access.</p>
-        <p>We've optimized performance and refined the user interface for a more enjoyable and efficient daily scheduling experience. Explore <br> new features and enhanced speed, discovering a smarter way to manage your time. Design tweaks improve readability <br> and workflow. Our commitment to user experience is paramount, with improvements based on your valuable feedback. We <br> encourage you to explore the new interface. More exciting features are coming soon!</p>
-        <p>Thank you for being part of the Timely community! We're excited about this new chapter, helping you schedule <br> smarter. Your feedback is invaluable; please reach out with questions or suggestions. We thrive on community input <br> to make Timely the ultimate tool. For inquiries, bug reports, or feature requests, our support team is ready. <br>
+        <p>Thank you for your patience for Timely 2.0.0! We aim to release this new version around the start<br>
+        of July. All current user data will be removed, meaning that your account will be reset. As mentioned in the<br>
+        previous notice, all user data will be erased as we will be re-writing how the app works
         <br>
-        <strong>That's all the notices for now! We will keep you updated.</strong></p>
+        <br>
+        This will be one of our last calls for user data. If you would like to be able to restore data, please<br>
+        contact us at the same email you signed up for Timely with, and provide us any account details you<br>
+        want to be saved and restored.
+        <br>
+        <br>.
+        We are currently working on Update 2.0.0 and are progressing well! We expect for the update to release earlier<br>
+        than expected, perhaps tomorrow or early July.
+        <br>
+        <br>
+        <strong>That's all the notices for now! Come back another time for more!</strong></p>
         <button onclick="start()">Back to homepage</button>
     `
     await delay(1000);
@@ -1009,7 +956,3 @@ async function openNotices() {
 openNotices();
 
 displayTime();
-
-/* Update 2.0.0
-    Cloud Sync using Backend
-*/
