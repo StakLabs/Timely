@@ -20,6 +20,10 @@ let users = [{
     username: 'Khalique',
     email: 'khaliquer@gmail.com',
     password: 'Oyster@22'
+}, {
+    username: 'Iron Woman',
+    email: 'nicezara@gmail.com',
+    password: 'apple'
 }];
 /*
 [{
@@ -56,7 +60,7 @@ async function signin() {
                         document.getElementById('load').classList.add('load');
                         //await delay(4000);
                         //window.location.href = "http://127.0.0.1:5500/Timely%20-%20Scheduling%20Site/Timely/t.html";
-                        window.location.href = "https://www.timelypro.online/";
+                        window.location.href = "https://www.timelypro.online";
                         savedusername = '';
                     }
                 }
