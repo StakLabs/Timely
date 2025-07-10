@@ -52,9 +52,27 @@
             word-wrap: break-word;
             border: 1px solid #333;
         }
+        h1#heading {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #00f2ff;
+            text-shadow: 0 0 10px #00f2ff, 0 0 20px #00f2ff55;
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                text-shadow: 0 0 10px #00f2ff, 0 0 20px #00f2ff55;
+            }
+            50% {
+                text-shadow: 0 0 20px #00f2ff, 0 0 30px #00f2ffaa;
+            }
+        }
+
     </style>
 </head>
 <body>
+    <h1 id="heading">🤖 T.I.M Console: Deploy Your Task to Time</h1>
     <input id="ask" onkeydown="if (event.key === 'Enter') askOpenAI(this.value)">
     <p id="response"></p>
     <script>
@@ -92,8 +110,6 @@
                 });
 
                 const data = await response.json();
-                console.log("🧠 Raw AI response:", data); // ADD THIS LINE
-
                 let reply = data.choices?.[0]?.message?.content;
 
                 if (!reply) {
