@@ -1,22 +1,35 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import fetch from 'node-fetch' // Only if you're on Node <18; otherwise, remove this
+import fetch from 'node-fetch' // only if Node <18
+
 dotenv.config()
 
 const app = express()
 
-// 👇 Setup CORS BEFORE anything else
-app.use(cors({
-  origin: 'https://www.timelypro.online',
-  methods: ['POST']
-}))
+const allowedOrigins = [
+  'https://www.timelypro.online',
+  'http://127.0.0.1:5500'
+];
 
-app.use(express.json())
+app.use(cors({
+  origin: function (origin, callback) {
+    console.log("🌍 Request Origin:", origin);
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("❌ Not allowed by CORS"));
+    }
+  },
+  methods: ['POST'],
+  credentials: true
+}));
+
+app.use(express.json());
 
 app.post('/ask', async (req, res) => {
-  const { prompt, system } = req.body
-
+  const { prompt, system } = req.body;
+  console.log("🔑 OpenAI Key:", process.env.OPENAI_API_KEY?.slice(0, 5) + '...');
   try {
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -31,15 +44,14 @@ app.post('/ask', async (req, res) => {
           { role: 'user', content: prompt }
         ]
       })
-    })
+    });
 
-    const data = await openaiRes.json()
-    res.json(data)
-
-  } catch (error) {
-    console.error('❌ OpenAI fetch failed:', error)
-    res.status(500).json({ error: 'Failed to contact OpenAI' })
+    const data = await openaiRes.json();
+    res.json(data);
+  } catch (err) {
+    console.error("❌ Failed to contact OpenAI:", err);
+    res.status(500).json({ error: 'Internal server error' });
   }
-})
+});
 
-app.listen(3000, () => console.log('🔥 AI server is lit on port 3000'))
+app.listen(3000, () => console.log("🔥 Server running on port 3000"));
