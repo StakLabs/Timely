@@ -1,31 +1,44 @@
 import express from 'express';
 import cors from 'cors';
-import fetch from 'node-fetch'; // Only needed for Node < 18
+import dotenv from 'dotenv';
+import fetch from 'node-fetch'; // Needed only if on Node <18
+
+dotenv.config();
 
 const app = express();
 
-// 💥 Hardcode your key here TEMPORARILY
-const OPENAI_API_KEY = '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'; // <== PASTE FULL KEY
+// 🧠 Custom CORS middleware that always returns correct origin
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    'https://www.timelypro.online',
+    'http://127.0.0.1:5500'
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
 
-// 🔐 CORS debug config — allow both prod and localhost
-app.use(cors({
-  origin: ['https://www.timelypro.online', 'http://127.0.0.1:5500'],
-  methods: ['POST'],
-}));
+// ⚠️ Handle preflight OPTIONS requests
+app.options('/ask', (req, res) => {
+  res.sendStatus(204);
+});
 
 app.use(express.json());
 
 app.post('/ask', async (req, res) => {
   const { prompt, system } = req.body;
-
-  console.log("🌍 Request Origin:", req.headers.origin || 'undefined');
-  console.log("🔑 Using OpenAI Key:", OPENAI_API_KEY.slice(0, 15) + '...');
+  console.log('🌍 Request Origin:', req.headers.origin);
+  console.log('🔑 OpenAI Key:', process.env.OPENAI_API_KEY?.slice(0, 10) + '...');
 
   try {
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -38,16 +51,11 @@ app.post('/ask', async (req, res) => {
     });
 
     const data = await openaiRes.json();
-
-    if (data.error) {
-      console.error("🛑 OpenAI Error:", data.error);
-    }
-
     res.json(data);
-  } catch (err) {
-    console.error('❌ Request to OpenAI failed:', err);
+  } catch (error) {
+    console.error('❌ OpenAI fetch failed:', error);
     res.status(500).json({ error: 'Failed to contact OpenAI' });
   }
 });
 
-app.listen(3000, () => console.log('🔥 Debug AI server running on port 3000'));
+app.listen(3000, () => console.log('🔥 AI server is lit on port 3000'));
