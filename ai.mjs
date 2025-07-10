@@ -1,40 +1,29 @@
-import express from 'express';
-import cors from 'cors';
-import fetch from 'node-fetch'; // Only needed if Node < 18
+import express from 'express'
+import cors from 'cors'
+import dotenv from 'dotenv'
+import fetch from 'node-fetch'
 
-const app = express();
+dotenv.config()
 
-const allowedOrigins = ['https://www.timelypro.online', 'http://127.0.0.1:5500'];
+const app = express()
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      console.log("🌍 Allowed Origin:", origin);
-      return callback(null, true);
-    } else {
-      console.log("🚫 Blocked Origin:", origin);
-      return callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: ['https://www.timelypro.online'],
   methods: ['POST']
-}));
+}))
 
-app.use(express.json());
+app.use(express.json())
 
 app.post('/ask', async (req, res) => {
-  const { prompt, system } = req.body;
+  const { prompt, system } = req.body
 
-  const apiKey = process.env.OPENAI_API_KEY;
-
-  if (!apiKey) {
-    return res.status(500).json({ error: 'API key is missing on the server' });
-  }
+  console.log("🔑 Loaded API key from env:", process.env.OPENAI_API_KEY?.slice(0, 10) + '...') // just to confirm
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -44,16 +33,16 @@ app.post('/ask', async (req, res) => {
           { role: 'user', content: prompt }
         ]
       })
-    });
+    })
 
-    const data = await response.json();
-    res.json(data);
+    const data = await openaiRes.json()
+    console.log('🧠 Raw AI response:', data)
+    res.json(data)
 
-  } catch (err) {
-    console.error('❌ OpenAI call failed:', err);
-    res.status(500).json({ error: 'OpenAI request failed' });
+  } catch (error) {
+    console.error('❌ OpenAI fetch failed:', error)
+    res.status(500).json({ error: 'Failed to contact OpenAI' })
   }
-});
+})
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🔥 AI server lit on port ${PORT}`));
+app.listen(3000, () => console.log('🔥 AI server is lit on port 3000'))
