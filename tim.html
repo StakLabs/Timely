@@ -92,6 +92,8 @@
                 });
 
                 const data = await response.json();
+                console.log("🧠 Raw AI response:", data); // ADD THIS LINE
+
                 let reply = data.choices?.[0]?.message?.content;
 
                 if (!reply) {
