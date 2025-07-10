@@ -1,40 +1,31 @@
-import express from 'express'
-import cors from 'cors'
-import dotenv from 'dotenv'
-import fetch from 'node-fetch' // only if Node <18
+import express from 'express';
+import cors from 'cors';
+import fetch from 'node-fetch'; // Only needed for Node < 18
 
-dotenv.config()
+const app = express();
 
-const app = express()
+// 💥 Hardcode your key here TEMPORARILY
+const OPENAI_API_KEY = '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'; // <== PASTE FULL KEY
 
-const allowedOrigins = [
-  'https://www.timelypro.online',
-  'http://127.0.0.1:5500'
-];
-
+// 🔐 CORS debug config — allow both prod and localhost
 app.use(cors({
-  origin: function (origin, callback) {
-    console.log("🌍 Request Origin:", origin);
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("❌ Not allowed by CORS"));
-    }
-  },
+  origin: ['https://www.timelypro.online', 'http://127.0.0.1:5500'],
   methods: ['POST'],
-  credentials: true
 }));
 
 app.use(express.json());
 
 app.post('/ask', async (req, res) => {
   const { prompt, system } = req.body;
-  console.log("🔑 OpenAI Key:", process.env.OPENAI_API_KEY?.slice(0, 5) + '...');
+
+  console.log("🌍 Request Origin:", req.headers.origin || 'undefined');
+  console.log("🔑 Using OpenAI Key:", OPENAI_API_KEY.slice(0, 15) + '...');
+
   try {
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -47,11 +38,16 @@ app.post('/ask', async (req, res) => {
     });
 
     const data = await openaiRes.json();
+
+    if (data.error) {
+      console.error("🛑 OpenAI Error:", data.error);
+    }
+
     res.json(data);
   } catch (err) {
-    console.error("❌ Failed to contact OpenAI:", err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Request to OpenAI failed:', err);
+    res.status(500).json({ error: 'Failed to contact OpenAI' });
   }
 });
 
-app.listen(3000, () => console.log("🔥 Server running on port 3000"));
+app.listen(3000, () => console.log('🔥 Debug AI server running on port 3000'));
