@@ -167,6 +167,7 @@ async function start() {
     if (schedules.length === 0) {
         document.body.innerHTML = `
             <button id="noticesButton" onclick="notices()" style="position: absolute; top: 20px; left: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">Notices</button>
+            <button id="hi" onclick="tim()" style="position: absolute; top: 20px; right: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">T.I.M.</button>
             <div id="timeDisplay"></div>
             <p id="xpDisplay">${getXP()} XP</p>
             <h1>Good ${getCurrentTime()}, ${user.username}!</h1>
@@ -181,6 +182,7 @@ async function start() {
     } else {
         document.body.innerHTML = `
             <button id="noticesButton" onclick="notices()" style="position: absolute; top: 20px; left: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">Notices</button>
+            <button id="hi" onclick="tim()" style="position: absolute; top: 20px; right: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">T.I.M.</button>
             <div id="timeDisplay"></div>
             <br>
             <br>
@@ -223,6 +225,19 @@ function logout() {
         window.location.href = 'https://www.timelypro.online/';
         }
     });
+}
+
+function tim() {
+    document.body.innerHTML = `
+        <iframe 
+            src="https://staklabs.github.io/Timely/tim.html" 
+            width="100%" 
+            height="600px" 
+            style="border: none; border-radius: 12px; box-shadow: 0 0 20px #00f2ff44;">
+        </iframe>
+        <br>
+        <button onclick="start()" style="cursor: pointer;">Back to schedules</button>
+    `
 }
 
 function addGeneralStyles() {
@@ -942,18 +957,8 @@ async function notices() {
     });
     document.body.innerHTML = `
         <h1>Notices for ${todaysDate}</h1>
-        <p>Thank you for your patience for Timely 2.0.0! We aim to release this new version around the start<br>
-        of July. All current user data will be removed, meaning that your account will be reset. As mentioned in the<br>
-        previous notice, all user data will be erased as we will be re-writing how the app works
-        <br>
-        <br>
-        This will be one of our last calls for user data. If you would like to be able to restore data, please<br>
-        contact us at the same email you signed up for Timely with, and provide us any account details you<br>
-        want to be saved and restored.
-        <br>
-        <br>.
-        We are currently working on Update 2.0.0 and are progressing well! We expect for the update to release earlier<br>
-        than expected, perhaps tomorrow or early July.
+        <p>We have officially launched Update 2.1.0! In this update, we bring to you our new AI assistant, T.I.M. (Timely <br>Intelligence Mechanism)
+        T.I.M. helps you create schedules from a simple prompt, a costly but useful feature!
         <br>
         <br>
         <strong>That's all the notices for now! Come back another time for more!</strong></p>
