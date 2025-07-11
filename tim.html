@@ -90,8 +90,9 @@
                 NEVER reply with words unless there is not enough information, instead, SIMPLYreply with ONLY a JSON object with the properties needed
                 Your object could look like this for instance:
                 {"id":"1","username":"Iron Woman","email":"nicezara@gmail.com","password":"apple","itemName":"Make dua","itemDescription":"any dua","itemDate":"2025-07-05T00:00:00.000Z","itemStart":"18:00","itemEnd":null,"itemCategory":"other"}
-                replace the username with user.username and replace password with user.password and replace the email with user.email, however, DO NOT WRAP THEM IN QUOTES
+                replace the username with ${user.username} and replace password with ${user.password} and replace the email with ${user.email}
                 The object must include EVERY FIELD -> username, password, email, id, itemName, itemDescription, itemDate, itemStart, itemEnd and itemCategory
+                If the user includes details for multiple items, make multiple objects and store them in an array.
                 if there is not enough information, tell that to the user (not in json format) and remember to include the word 'information' in that response.
                 The ID for the item should just be a random number from 0 to 999999999 please.
                 The only categories are work, personal, shopping, to-do and other
@@ -124,9 +125,9 @@
                     return;
                 }
 
-                reply = reply.replace('user.username', user.username);
+                /*reply = reply.replace('user.username', user.username);
                 reply = reply.replace('user.email', user.email);
-                reply = reply.replace('user.password', user.password);
+                reply = reply.replace('user.password', user.password);*/
 
                 document.getElementById('response').innerText = 'Processing Information...';
                 addScheduleToBackend(JSON.parse(reply));
