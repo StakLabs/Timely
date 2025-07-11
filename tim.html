@@ -130,7 +130,17 @@
                 reply = reply.replace('user.password', user.password);*/
 
                 document.getElementById('response').innerText = 'Processing Information...';
-                addScheduleToBackend(JSON.parse(reply));
+                document.getElementById('response').innerText = 'Processing Information...';
+
+                const parsed = JSON.parse(reply);
+                if (Array.isArray(parsed)) {
+                    for (const item of parsed) {
+                        await addScheduleToBackend(item);
+                    }
+                } else {
+                    await addScheduleToBackend(parsed);
+                }
+
 
             } catch (error) {
                 console.error('Request failed:', error);
