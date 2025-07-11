@@ -82,6 +82,7 @@
                 alert('User not logged in');
                 return;
             }
+            const todaysDate = new Date().toLocaleDateString();
 
             const systemPrompt = `
                 Your are T.I.M -> Timely Intelligence Mechanism
@@ -94,7 +95,8 @@
                 if there is not enough information, tell that to the user and remember to include the word 'information' in that response.
                 The ID for the item should just be a random number from 0 to 999999999 please.
                 The only categories are work, personal, shopping, to-do and other
-                NEVER GUESS THE PASSWORD USERNAME OR EMAIL
+                NEVER GUESS THE PASSWORD USERNAME OR EMAIL.
+                Todays date is ${todaysDate} and i am giving you this imformation so when the user says they have to do something for tomorrow or next week or something like that, you know what to add as the date, you simply add days to the date
             `;
 
             document.getElementById('response').innerText = 'Thinking...';
