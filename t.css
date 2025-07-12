@@ -1,5 +1,5 @@
 body {
-    background: linear-gradient(to right, #bbdefb, #90caf9);
+    background: #90caf9;
     color: #1a237e;
     font-family: "Quicksand", sans-serif;
     transition: all 0.3s ease;
@@ -172,4 +172,45 @@ p#xpDisplay + h1 {
 
 .notDone {
     opacity: 1;
+}
+
+#logout:hover {
+    background-color: #f44336;
+    color: white;
+}
+
+/* New styles for icon buttons */
+.icon-button {
+    background-color: transparent;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; /* Adjust as needed */
+    height: 40px; /* Adjust as needed */
+    border-radius: 50%; /* Makes it circular */
+    transition: background-color 0.3s ease;
+}
+
+.icon-button img {
+    width: 24px; /* Size of the SVG icon */
+    height: 24px; /* Size of the SVG icon */
+}
+
+.edit-button:hover {
+    background-color: rgba(25, 118, 210, 0.2); /* Lighter blue for hover */
+}
+
+.remove-button:hover {
+    background-color: rgba(211, 51, 51, 0.2); /* Lighter red for hover */
+}
+
+/* Adjustments for button container within .item-actions */
+.item-buttons {
+    display: flex;
+    justify-content: space-around; /* Distribute buttons evenly */
+    align-items: center;
+    width: 100%;
 }
