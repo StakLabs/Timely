@@ -76,18 +76,27 @@
     <input id="ask" onkeydown="if (event.key === 'Enter') askOpenAI(this.value)">
     <p id="response"></p>
     <script>
+        const user = JSON.parse(localStorage.getItem('savedUser'));
+        async function getSchedulesByEmail(email) {
+            return await fetch(`https://timely-zc0n.onrender.com/items/${encodeURIComponent(email)}`)
+                .then(response => response.json())
+                .catch(error => {
+                    console.error('Error:', error);
+                    return [];
+                });
+        }
         async function askOpenAI(prompt) {
-            const user = JSON.parse(localStorage.getItem('savedUser'));
             if (!user) {
                 alert('User not logged in');
                 return;
             }
+            const schedules = getSchedulesByEmail(user.email);
             const todaysDate = new Date().toLocaleDateString();
 
             const systemPrompt = `
                 Your are T.I.M -> Timely Intelligence Mechanism
                 Your job is to transform what someone says into integratable schedules
-                NEVER reply with words unless there is not enough information, instead, SIMPLYreply with ONLY a JSON object with the properties needed
+                NEVER reply with words unless there is not enough information or they are asking what they have in their schedule, instead, SIMPLY reply with ONLY a JSON object with the properties needed
                 Your object could look like this for instance:
                 {"id":"1","username":"Iron Woman","email":"nicezara@gmail.com","password":"apple","itemName":"Make dua","itemDescription":"any dua","itemDate":"2025-07-05T00:00:00.000Z","itemStart":"18:00","itemEnd":null,"itemCategory":"other"}
                 replace the username with user.username and replace password with user.password and replace the email with user.email
@@ -98,6 +107,7 @@
                 The only categories are work, personal, shopping, to-do and other
                 NEVER GUESS VALUES! IF THERE IS NOT ENOUGH INFORMATION, SAY SO BUT DO NOT SAY IT IN JSON FORMAT.
                 Todays date is ${todaysDate} and i am giving you this imformation so when the user says they have to do something for tomorrow or next week or something like that, you know what to add as the date, you simply add days to the date
+                The users schedule is ${schedules}, use this information when they ask for their items, tasks or schedules.
             `;
 
             document.getElementById('response').innerText = 'Thinking...';
