@@ -8,7 +8,7 @@ dotenv.config()
 const app = express()
 
 app.use(cors({
-  origin: ['https://www.timelypro.online'],
+  origin: ['https://www.timelypro.online', 'http://127.0.0.1:5500'],
   methods: ['POST']
 }))
 
@@ -45,4 +45,4 @@ app.post('/ask', async (req, res) => {
   }
 })
 
-app.listen(3000, () => console.log('🔥 AI server is lit on port 3000'))
+app.listen(3000, () => console.log('🔥 AI server is lit on port 3000');
