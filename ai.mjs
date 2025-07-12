@@ -45,4 +45,4 @@ app.post('/ask', async (req, res) => {
   }
 })
 
-app.listen(3000, () => console.log('🔥 AI server is lit on port 3000');
+app.listen(3000, () => console.log('🔥 AI server is lit on port 3000'));
