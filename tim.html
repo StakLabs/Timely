@@ -91,7 +91,7 @@
                 return;
             }
             const todaysDate = new Date().toLocaleDateString();
-            const schedules = await getSchedulesByEmail(user.email);
+            const schedules = JSON.stringify(await getSchedulesByEmail(user.email));
             const systemPrompt = `
                 Your are T.I.M -> Timely Intelligence Mechanism
                 Your job is to transform what someone says into integratable schedules
@@ -107,8 +107,9 @@
                 NEVER GUESS VALUES! IF THERE IS NOT ENOUGH INFORMATION, SAY SO BUT DO NOT SAY IT IN JSON FORMAT.
                 Todays date is ${todaysDate} and i am giving you this imformation so when the user says they have to do something for tomorrow or next week or something like that, you know what to add as the date, you simply add days to the date
                 The users schedule is ${schedules}, use this information when they ask for their items, tasks or schedules.
-                if the user asks what they have on their schedules, TELL THEM IN WORDS they have ${schedules} but DO NOT GIVE THEM AN ARRAY OR OBJECT, ONLY WORDS.
+                if the user asks what they have on their schedules, TELL THEM IN WORDS they have ${schedules} but DO NOT GIVE THEM AN ARRAY OR OBJECT, ONLY WORDS and tell them the time and description of needed.
             `;
+            //debugger;
 
             document.getElementById('response').innerText = 'Thinking...';
 
