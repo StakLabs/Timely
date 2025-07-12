@@ -122,7 +122,7 @@ async function addScheduleToBackend(schedule) {
         itemDescription: schedule.description || "No description provided",
         email: schedule.email,
         itemEnd: schedule.ending || null,
-        id: schedule.id, // Re-added this line based on previous logic
+        id: schedule.id,
         itemName: schedule.name,
         itemStart: schedule.starting || null,
         username: schedule.username,
@@ -207,7 +207,6 @@ async function start() {
         setInterval(updateXpDisplay, 1000);
     }
     addGeneralStyles();
-    addStyles();
 }
 
 function logout() {
@@ -438,8 +437,17 @@ async function data() {
                 <p>${starting ? 'Start Time: ' + starting : ''}</p>
                 <p>${ending ? 'End Time: ' + ending : ''}</p>
                 <p>Category: ${category}</p>
-                <button onclick="newItem('${name.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}', '${starting || ''}', '${ending || ''}', '${category}', '${date}', ${id})">Edit</button>
-                <button onclick="remove(${id})">Remove</button>
+                <div class="item-actions">
+                    <hr>
+                    <div class="item-buttons">
+                        <button class="icon-button edit-button" onclick="newItem('${name.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}', '${starting || ''}', '${ending || ''}', '${category}', '${date}', ${id})">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%231976D2' d='M3 17.25V21h3.75L18.75 9.75l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0L15.29 4.04l3.75 3.75 1.67-1.67z'/%3E%3C/svg%3E" alt="Edit">
+                        </button>
+                        <button class="icon-button remove-button" onclick="remove(${id})">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23D32F2F' d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.12-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z'/%3E%3C/svg%3E" alt="Remove">
+                        </button>
+                    </div>
+                </div>
             </div>
         `;
     });
@@ -452,8 +460,6 @@ async function data() {
 
         done(id);
     });
-
-    addStyles();
 }
 
 async function allData() {
@@ -479,8 +485,17 @@ async function allData() {
                 <p>${starting ? 'Start Time: ' + starting : ''}</p>
                 <p>${ending ? 'End Time: ' + ending : ''}</p>
                 <p>Category: ${category}</p>
-                <button onclick="newItem('${name.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}', '${starting || ''}', '${ending || ''}', '${category}', '${date}', ${id})">Edit</button>
-                <button onclick="remove(${id})">Remove</button>
+                <div class="item-actions">
+                    <hr>
+                    <div class="item-buttons">
+                        <button class="icon-button edit-button" onclick="newItem('${name.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}', '${starting || ''}', '${ending || ''}', '${category}', '${date}', ${id})">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%231976D2' d='M3 17.25V21h3.75L18.75 9.75l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0L15.29 4.04l3.75 3.75 1.67-1.67z'/%3E%3C/svg%3E" alt="Edit">
+                        </button>
+                        <button class="icon-button remove-button" onclick="remove(${id})">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23D32F2F' d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.12-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z'/%3E%3C/svg%3E" alt="Remove">
+                        </button>
+                    </div>
+                </div>
             </div>
         `;
     });
@@ -494,8 +509,6 @@ async function allData() {
 
         done(id);
     });
-
-    addStyles();
 }
 
 function newItem(name, description, starting, ending, category, date, id) {
@@ -631,90 +644,6 @@ async function remove(id, swalAlert) {
             deleteScheduleById(id);
             start();
     }
-}
-
-function addStyles() {
-  const style = document.createElement('style');
-  style.innerHTML = `
-    #scheduleContainer {
-      width: 100%;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-      max-width: 960px;
-      margin: 0 auto;
-    }
-
-    .item {
-      border: 3px solid #90CAF9;
-      padding: 16px;
-      border-radius: 10px;
-      background-color: #E3F2FD;
-      width: 220px;
-      height: 250px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease;
-    }
-
-    .item:hover {
-      transform: scale(1.02);
-    }
-
-    .item h2 {
-      margin: 0 0 8px 0;
-      font-size: 20px;
-      color: #1976D2;
-    }
-
-    .item p {
-      margin: 4px 0;
-      color: #424242;
-      font-size: 14px;
-    }
-
-    .item button {
-      margin-top: 10px;
-      padding: 8px;
-      background-color: white;
-      border: 2px solid #2196F3;
-      border-radius: 8px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .item button:hover {
-      background-color: #E3F2FD;
-    }
-    .item {
-      position: relative;
-    }
-
-    .checkbox-wrapper {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-    }
-
-    .checkbox-wrapper input[type="checkbox"] {
-      transform: scale(1.2);
-      cursor: pointer;
-    }
-
-    .item button[onclick^="remove("] {
-      background-color: #EF9A9A;
-      color: white;
-      border: 2px solid #E57373;
-    }
-
-    .item button[onclick^="remove("]:hover {
-      background-color: #E57373;
-    }
-  `;
-  document.head.appendChild(style);
 }
 
 async function viewAll() {
