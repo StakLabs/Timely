@@ -90,9 +90,8 @@
                 alert('User not logged in');
                 return;
             }
-            const schedules = await getSchedulesByEmail(user.email);
             const todaysDate = new Date().toLocaleDateString();
-
+            const schedules = await getSchedulesByEmail(user.email);
             const systemPrompt = `
                 Your are T.I.M -> Timely Intelligence Mechanism
                 Your job is to transform what someone says into integratable schedules
@@ -131,7 +130,7 @@
                     return;
                 }
 
-                if (reply.includes('information')) {
+                if (!reply.includes('{')) {
                     document.getElementById('response').innerText = reply;
                     return;
                 }
@@ -140,7 +139,6 @@
                 reply = reply.replace('user.email', user.email);
                 reply = reply.replace('user.password', user.password);
 
-                document.getElementById('response').innerText = 'Processing Information...';
                 document.getElementById('response').innerText = 'Processing Information...';
 
                 const parsed = JSON.parse(reply);
