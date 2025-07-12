@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import mysql from 'mysql2/promise'; // use the promise-based version
+import mysql from 'mysql2/promise';
 import bodyParser from 'body-parser';
 
 const app = express();
@@ -10,16 +10,19 @@ const databaseName = 'sql12786360';
 app.use(cors());
 app.use(bodyParser.json());
 
-// 🌐 MySQL connection
-const db = await mysql.createConnection({
+// ✅ Use MySQL connection pool instead of single connection
+const pool = mysql.createPool({
     host: 'sql12.freesqldatabase.com',
     port: 3306,
     user: 'sql12786360',
     password: 'bYC3cnLz68',
-    database: databaseName
+    database: databaseName,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-console.log('✅ Connected to MySQL database');
+console.log('✅ Using MySQL connection pool');
 
 // 🌍 Base Route
 app.get('/', (req, res) => {
@@ -29,20 +32,22 @@ app.get('/', (req, res) => {
 // 📦 Get all items
 app.get('/items', async (req, res) => {
     try {
-        const [results] = await db.query('SELECT * FROM items');
+        const [results] = await pool.query('SELECT * FROM items');
         res.json(results);
     } catch (err) {
-        res.status(500).json(err);
+        console.error('GET /items error:', err);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
 // 📦 Get items by email
 app.get('/items/:email', async (req, res) => {
     try {
-        const [results] = await db.query('SELECT * FROM items WHERE email = ?', [req.params.email]);
+        const [results] = await pool.query('SELECT * FROM items WHERE email = ?', [req.params.email]);
         res.json(results);
     } catch (err) {
-        res.status(500).json(err);
+        console.error('GET /items/:email error:', err);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -51,23 +56,25 @@ app.post('/items', async (req, res) => {
     const { id, username, email, password, itemName, itemDescription, itemDate, itemStart, itemEnd } = req.body;
 
     try {
-        await db.query(
+        await pool.query(
             'INSERT INTO items (id, username, email, password, itemName, itemDescription, itemDate, itemStart, itemEnd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [id, username, email, password, itemName, itemDescription, itemDate, itemStart, itemEnd]
         );
         res.json({ message: 'Item created successfully', id });
     } catch (err) {
-        res.status(500).json(err);
+        console.error('POST /items error:', err);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
 // ❌ Delete an item
 app.delete('/items/:id', async (req, res) => {
     try {
-        await db.query('DELETE FROM items WHERE id = ?', [req.params.id]);
+        await pool.query('DELETE FROM items WHERE id = ?', [req.params.id]);
         res.json({ message: 'Item deleted' });
     } catch (err) {
-        res.status(500).json(err);
+        console.error('DELETE /items/:id error:', err);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -76,25 +83,27 @@ app.put('/users/:email', async (req, res) => {
     const { xp } = req.body;
 
     try {
-        await db.query('UPDATE users SET xp = ? WHERE email = ?', [xp, req.params.email]);
+        await pool.query('UPDATE users SET xp = ? WHERE email = ?', [xp, req.params.email]);
         res.json({ message: 'XP updated', amount: xp, email: req.params.email });
     } catch (err) {
-        res.status(500).json(err);
+        console.error('PUT /users/:email error:', err);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
 // 📊 Get XP for a user
 app.get('/users/:email', async (req, res) => {
     try {
-        const [results] = await db.query('SELECT xp FROM users WHERE email = ?', [req.params.email]);
+        const [results] = await pool.query('SELECT xp FROM users WHERE email = ?', [req.params.email]);
 
         if (results.length > 0) {
             res.json({ xp: results[0].xp });
         } else {
-            res.json({ xp: 0 }); // fallback
+            res.json({ xp: 0 });
         }
     } catch (err) {
-        res.status(500).json(err);
+        console.error('GET /users/:email error:', err);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
