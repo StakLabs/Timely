@@ -151,7 +151,6 @@ async function addScheduleToBackend(schedule) {
 
 async function start() {
     const user = JSON.parse(localStorage.getItem('savedUser')) || null;
-
     if (!user) {
         document.body.innerHTML = `
             <h1>Error Code 402 - Payment Required, Not Logged In</h1>
@@ -169,8 +168,13 @@ async function start() {
             <button id="noticesButton" onclick="notices()" style="position: absolute; top: 20px; left: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">Notices</button>
             <button id="hi" onclick="tim()" style="position: absolute; top: 20px; right: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">T.I.M.</button>
             <div id="timeDisplay"></div>
-            <p id="xpDisplay">${getXP()} XP</p>
+            <p id="xpDisplay">${await getXP()} XP</p>
             <h1>Good ${getCurrentTime()}, ${user.username}!</h1>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+                <label for="productivityMeter">Productivity Level:</label>
+                <meter id="productivityMeter" min="0" max="100" value="0" low="40" high="70" optimum="80"></meter>
+            </div>
+            <br>
             <div class="button-container">
                 <button onclick="startSmartSuggestions('time')">Smart Suggestions</button>
                 <button onclick="newItem()">Add New Item</button>
@@ -187,8 +191,13 @@ async function start() {
             <br>
             <br>
             <a onclick="addXP(10);" href="whatsapp://send?text=Timely%20changed%20my%20routine!%20Create%20an%20account%20here:%20https://www.timelypro.online/" data-action="share/whatsapp/share">Refer Timely to a Friend for 10 Bonus XP!</a>
-            <p id="xpDisplay">${getXP()} XP</p>
+            <p id="xpDisplay">${await getXP()} XP</p>
             <h1>Good ${getCurrentTime()}, ${user.username}!</h1>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+                <label for="productivityMeter">Productivity Level: </label>
+                <meter id="productivityMeter" name="level" min="0" max="100" value="0" low="40" high="70" optimum="80"></meter>
+            </div>
+            <br>
             <div class="button-container">
                 <button id="logout" onclick="logout();">Logout</button>
                 <button onclick="startSmartSuggestions('time')">Smart Suggestions</button>
@@ -202,7 +211,8 @@ async function start() {
         `;
         data();
     }
-
+    addProductivity(-1);
+    decayProductivity();
     if (document.getElementById('xpDisplay')) {
         setInterval(updateXpDisplay, 1000);
     }
@@ -832,6 +842,16 @@ async function addXP(amount) {
         });
     }
     updateXpDisplay();
+    if (amount == 1) addProductivity(5);
+    if (amount == 5) addProductivity(15);
+}
+
+function addProductivity(amount) {
+    var productivity = document.getElementById('productivityMeter');
+    productivity.value = localStorage.getItem('productivity') || 0; 
+    productivity.value += amount;
+    var value = productivity.value;
+    localStorage.setItem('productivity', JSON.stringify(value));
 }
 
 async function getXP() {
@@ -904,3 +924,31 @@ async function openNotices() {
 openNotices();
 
 displayTime();
+
+function decayProductivity() {
+    const productivityMeter = document.getElementById('productivityMeter');
+    if (productivityMeter) {
+        let productivity = parseFloat(localStorage.getItem('productivity')) || 0;
+        let lastActivity = parseInt(localStorage.getItem('lastActivityTimestamp')) || Date.now();
+
+        const currentTime = Date.now();
+        const timeElapsed = currentTime - lastActivity; // Time in milliseconds
+
+        const decayIntervalMs = 3600000; // 1 hour in milliseconds
+        const decayAmountPerHour = 5; // Amount productivity decreases per hour of inactivity
+
+        // Calculate how many decay intervals have passed
+        const intervalsPassed = Math.floor(timeElapsed / decayIntervalMs);
+
+        if (intervalsPassed > 0) {
+            productivity -= (intervalsPassed * decayAmountPerHour);
+            if (productivity < 0) productivity = 0; // Ensure productivity doesn't go below 0
+
+            localStorage.setItem('productivity', JSON.stringify(productivity));
+            productivityMeter.value = productivity;
+
+            // Update the last activity timestamp to reflect the decay applied
+            localStorage.setItem('lastActivityTimestamp', JSON.stringify(lastActivity + (intervalsPassed * decayIntervalMs)));
+        }
+    }
+}
