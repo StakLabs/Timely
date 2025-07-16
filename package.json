@@ -2,7 +2,7 @@
   "name": "timely-backend",
   "version": "1.0.0",
   "type": "module",
-  "main": "ai.mjs", 
+  "main": "ai.mjs",
   "scripts": {
     "start-ai": "node ai.mjs",
     "start-api": "node api.js"
@@ -12,6 +12,7 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "mysql2": "^3.14.1",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "openai": "^4.30.1"
   }
 }
