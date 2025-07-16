@@ -4,6 +4,7 @@
   "type": "module",
   "main": "ai.mjs",
   "scripts": {
+    "build": "echo 'No build step required'",
     "start-ai": "node ai.mjs",
     "start-api": "node api.js"
   },
@@ -16,5 +17,3 @@
     "openai": "^4.30.1"
   }
 }
-
-
