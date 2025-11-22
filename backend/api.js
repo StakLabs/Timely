@@ -107,7 +107,11 @@ app.get('/users/:email', async (req, res) => {
     }
 });
 
+const TIMELY_PING_URL = 'https://timely-2.onrender.com/ping';
+setInterval(() => { fetch(TIMELY_PING_URL).catch(() => {}); }, 10 * 60 * 1000);
 // 🚀 Start server
 app.listen(port, () => {
     console.log(`🚀 Server is live on port ${port}`);
 });
+
+app.get('/ping', (req, res) => res.status(200).send('pong'));
