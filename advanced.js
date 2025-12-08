@@ -1,4 +1,3 @@
-//
 const suggestions = {
     'Early Morning': [
         'Morning Yoga', 'Breakfast', 'Reading'
@@ -44,7 +43,7 @@ let schedules;
 
 let items;
 
-let pickedDate = new Date().toISOString().split('T')[0];
+let pickedDate =  new Date().toLocaleDateString("en-CA");
 
 const html = `
     <!DOCTYPE html>
@@ -64,8 +63,6 @@ const html = `
     </html>
 `
 
-//backend work
-
 async function getSchedulesByEmail(email) {
     return await fetch(`https://timely-zc0n.onrender.com/items/${encodeURIComponent(email)}`)
         .then(response => response.json())
@@ -75,16 +72,28 @@ async function getSchedulesByEmail(email) {
         });
 }
 
+async function getAllItems() {
+    try {
+        const response = await fetch('https://timely-zc0n.onrender.com/items');
+        if (!response.ok) {
+            throw new Error('Failed to fetch all items');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching all items:', error);
+        return [];
+    }
+}   
+
 async function deleteScheduleById(id) {
     try {
         const response = await fetch(`https://timely-zc0n.onrender.com/items/${id}`, {
             method: 'DELETE'
         });
-        //start();
         if (!response.ok) {
             throw new Error('Failed to delete schedule');
         }
-        return await response.json(); // or just return true if your API doesn't return data
+        return await response.json();
     } catch (error) {
         console.error('Error:', error);
         return null;
@@ -96,11 +105,10 @@ async function deleteAll() {
         const response = await fetch(`https://timely-zc0n.onrender.com/items/`, {
             method: 'DELETE'
         });
-        //start();
         if (!response.ok) {
             throw new Error('Failed to delete schedule');
         }
-        return await response.json(); // or just return true if your API doesn't return data
+        return await response.json();
     } catch (error) {
         console.error('Error:', error);
         return null;
@@ -108,34 +116,37 @@ async function deleteAll() {
 }
 
 async function addScheduleToBackend(schedule) {
-    // Convert to required backend format
     const formattedSchedule = {
-        itemCategory: schedule.category || 'other',
-        itemDate: schedule.date,
-        itemDescription: schedule.description || "No description provided",
-        email: schedule.email,
-        itemEnd: schedule.ending || null,
         id: schedule.id,
-        itemName: schedule.name,
-        itemStart: schedule.starting || null,
-        username: schedule.username, // Make sure to include username and password if needed
-        password: schedule.password
+        username: schedule.username,
+        email: schedule.email,
+        password: schedule.password,
+
+        itemName: schedule.itemName || schedule.name,
+        itemDescription: schedule.itemDescription || schedule.description || "No description provided",
+        itemDate: schedule.itemDate || schedule.date,
+        itemStart: schedule.itemStart || schedule.starting || "",
+        itemEnd: schedule.itemEnd || schedule.ending || "",
+        itemCategory: schedule.itemCategory || schedule.category || "other",
     };
 
     try {
         const response = await fetch('https://timely-zc0n.onrender.com/items/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formattedSchedule)
         });
+
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Failed to add schedule: ${response.status} - ${errorText}`);
             throw new Error('Failed to add schedule');
         }
+
         return await response.json();
+
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error in addScheduleToBackend:', error);
         return null;
     }
 }
@@ -152,74 +163,26 @@ async function start() {
         return;
     }
 
-    schedules = await getSchedulesByEmail(user.email);
-    //console.log("Schedules:", schedules);
+    const fetchedSchedules = await getSchedulesByEmail(user.email);
+    schedules = Array.isArray(fetchedSchedules) ? fetchedSchedules : [];
+    const todaysDate = getLocalDate();
 
-    if (schedules.length === 0) {
-        document.body.innerHTML = `
-            <p>${cloudStatus()}</p>
-            <button id="noticesButton" onclick="notices()" style="position: absolute; top: 20px; left: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">Notices</button>
-            <div id="timeDisplay"></div>
-            <p id="xpDisplay">${getXP()} XP</p>
-            <h1>Good ${getCurrentTime()}, ${user.username}!</h1>
-            <div class="button-container">
-                <button onclick="startSmartSuggestions('time')">Smart Suggestions</button>
-                <button onclick="newItem()">Add New Item</button>
-                <button onclick="newPreset()">Add New Preset</button>
-                <button id="logout" onclick="logout();">Logout</button>
-            </div>
-            <div id="scheduleContainer"></div>
-        `;
-    } else {
-        /*
-            <select id="categorySelector" onchange="data(this.value)">
-                <option value="All">All Categories</option>
-                <option value="work">Work</option>
-                <option value="personal">Personal</option>
-                <option value="shopping">Shopping</option>
-                <option value="todo">To-Do</option>
-                <option value="other">Other</option>
-            </select>
-        */
-        document.body.innerHTML = `
-        <div id="home">
-            <p>${cloudStatus()}</p>
-            <button id="noticesButton" onclick="notices()" style="position: absolute; top: 20px; left: 20px; background-color: #1976D2; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px;">Notices</button>
-            <div id="timeDisplay"></div>
-            <br>
-            <br>
-            <a onclick="addXP(10);" href="whatsapp://send?text=Timely%20changed%20my%20routine!%20Create%20an%20account%20here:%20https://www.timelypro.online/" data-action="share/whatsapp/share">Refer Timely to a Friend for 10 Bonus XP!</a>
-            <p id="xpDisplay">${getXP()} XP</p>
-            <h1>Good ${getCurrentTime()}, ${user.username}!</h1>
-            <div class="button-container">
-                <button id="logout" onclick="logout();">Logout</button>
-                <button onclick="startSmartSuggestions('time')">Smart Suggestions</button>
-                <button onclick="newItem()">Add Item</button>
-                <button onclick="newPreset()">Add Preset</button>
-                <button onclick="removeAll();">Remove all Items</button>
-                <button onclick="allItems = true; viewAll();">View All Items</button>
-            </div>
-            <input type="date" id="datePicker" value="${pickedDate}" onchange="pickedDate = this.value; start();">
-            <div id="scheduleContainer"></div>
-        </div>
-        `;
-       //container = document.querySelector('#scheduleContainer');
-        // get a selected value of dropdown here assign into variable
-       // const selectedCeategory = document.getElementById('categorySelector').value;
-       data();
-    }
+    const todaysTasks = schedules.filter(task => {
+        const taskDate = task.itemDate.split("T")[0];
+        return taskDate === todaysDate;
+    });
+    console.log(todaysTasks)
+    
+    await renderDashboard();     // NEW UI is placed here
+    data();             // Fills in Lumen's daily summary
+    addProductivity(-1);
+    decayProductivity();
 
     if (document.getElementById('xpDisplay')) {
         setInterval(updateXpDisplay, 1000);
     }
-    addGeneralStyles();
-    addStyles();
-    await delay(5000);
-    start();
-}
 
-function cloudStatus() {
-    return navigator.onLine ? 'Cloud Sync is on' : 'Cloud sync is off'
+    addGeneralStyles();
 }
 
 function logout() {
@@ -237,6 +200,19 @@ function logout() {
         window.location.href = 'https://www.timelypro.online/';
         }
     });
+}
+
+function tim() {
+    document.body.innerHTML = `
+        <iframe 
+            src="https://staklabs.github.io/Timely/tim.html" 
+            width="100%" 
+            height="600px" 
+            style="border: none; border-radius: 12px; box-shadow: 0 0 20px #00f2ff44;">
+        </iframe>
+        <br>
+        <button onclick="start()" style="cursor: pointer;">Back to schedules</button>
+    `
 }
 
 function addGeneralStyles() {
@@ -411,13 +387,12 @@ async function removeAll() {
     });
 }
 
-async function data(selectedCategory) {
-    //selectedCategory = selectedCategory.toLowerCase();
-
+async function  data() {
+    container = document.querySelector('#scheduleContainer');
+    container.innerHTML = '';
     const filteredSchedulesByDate = allItems ? schedules : schedules.filter(schedule => (new Date(schedule.itemDate).toLocaleDateString()).replaceAll('/', '-')
-         === (new Date(pickedDate).toLocaleDateString()).replaceAll('/', '-'));
-    console.log(filteredSchedulesByDate);
-    //debugger;
+        === (new Date(pickedDate).toLocaleDateString()).replaceAll('/', '-'));
+    
     filteredSchedulesByDate.forEach((schedule) => {
         const id = schedule.id;
         const name = schedule.itemName;
@@ -427,7 +402,6 @@ async function data(selectedCategory) {
         const starting = schedule.itemStart;
         const ending = schedule.itemEnd;
         let category = schedule.itemCategory;
-        container = document.querySelector('#scheduleContainer');
         category = category.toLowerCase();
         container.innerHTML += `
             <div class="item" id="item_${id}"> <div class="checkbox-wrapper">
@@ -439,33 +413,36 @@ async function data(selectedCategory) {
                 <p>${starting ? 'Start Time: ' + starting : ''}</p>
                 <p>${ending ? 'End Time: ' + ending : ''}</p>
                 <p>Category: ${category}</p>
-                <button onclick="newItem('${name.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}', '${starting || ''}', '${ending || ''}', '${category}', '${date}', ${id})">Edit</button>
-                <button onclick="remove(${id})">Remove</button>
+                <div class="item-actions">
+                    <hr>
+                    <div class="item-buttons">
+                        <button class="edit-button" onclick="newItem('${name.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}', '${starting || ''}', '${ending || ''}', '${category}', '${date}', ${id})">
+                            Edit
+                        </button>
+                        <button class="remove-button" onclick="remove(${id})">
+                            Remove
+                        </button>
+                    </div>
+                </div>
             </div>
         `;
     });
 
-    finalFilteredSchedules.forEach((schedule) => {
+    filteredSchedulesByDate.forEach((schedule) => {
         const { id } = schedule;
         const checked = JSON.parse(localStorage.getItem(`checkbox_${id}`)) || false;
         const checkbox = document.getElementById("checkbox_" + id);
         if (checkbox) checkbox.checked = checked;
 
-
         done(id);
     });
-
-    addStyles();
 }
 
-async function allData(selectedCategory = 'All') {
+async function allData() {
+    container = document.querySelector('#scheduleContainer');
     container.innerHTML = '';
-    /*const filteredSchedules = selectedCategory === 'All'
-        ? schedules
-        : schedules.filter(schedule => schedule.category === selectedCategory);*/
     let filteredSchedules = schedules;
     filteredSchedules.forEach((schedule) => {
-        //const { ending, starting, date, id, name, description, category } = schedule;
         const id = schedule.id;
         const name = schedule.itemName;
         let description = schedule.itemDescription || 'No description provided  ';
@@ -480,12 +457,21 @@ async function allData(selectedCategory = 'All') {
                 </div>
                 <h2>${name}</h2>
                 <p>${description || 'No description provided'}</p>
-                <p>Date: ${(new Date(date).toLocaleDateString()).replaceAll('/', '-')/*.replace('T14:00:00.000Z', '')*/}</p>
+                <p>Date: ${(new Date(date).toLocaleDateString()).replaceAll('/', '-')}</p>
                 <p>${starting ? 'Start Time: ' + starting : ''}</p>
                 <p>${ending ? 'End Time: ' + ending : ''}</p>
                 <p>Category: ${category}</p>
-                <button onclick="newItem('${name.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}', '${starting || ''}', '${ending || ''}', '${category}', '${date}', ${id})">Edit</button>
-                <button onclick="remove(${id})">Remove</button>
+                <div class="item-actions">
+                    <hr>
+                    <div class="item-buttons">
+                        <button class="icon-button edit-button" onclick="newItem('${name.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}', '${starting || ''}', '${ending || ''}', '${category}', '${date}', ${id})">
+                            Edit
+                        </button>
+                        <button class="icon-button remove-button" onclick="remove(${id})">
+                            Remove
+                        </button>
+                    </div>
+                </div>
             </div>
         `;
     });
@@ -499,8 +485,6 @@ async function allData(selectedCategory = 'All') {
 
         done(id);
     });
-
-    addStyles();
 }
 
 function newItem(name, description, starting, ending, category, date, id) {
@@ -517,7 +501,6 @@ function newItem(name, description, starting, ending, category, date, id) {
     if (typeof category === 'undefined') category = 'other';
     const currentDate = new Date().toISOString().split('T')[0];
     if (typeof date === 'undefined') date = currentDate;
-    //debugger;
 
     const itemId = id ? id : null;
 
@@ -529,7 +512,7 @@ function newItem(name, description, starting, ending, category, date, id) {
             <label for="description">Description:</label>
             <textarea id="description" name="description">${description}</textarea>
             <label for="date">Date:</label>
-            <input type="date" id="date" name="date" value="${date.replace('T14:00:00.000Z', '')}" required>
+            <input type="date" id="date" name="date" value="${pickedDate}" required>
             <br>
             <br>
             <label for="startTime">Start time:</label>
@@ -583,10 +566,10 @@ async function addItem() {
     timeSuggestions.push(name);
     localStorage.setItem('timeSuggestions_' + currentTime + '_' + user.username, JSON.stringify(timeSuggestions));
 
-    // Find the max id in current schedules
     let maxId = 0;
-    if (Array.isArray(schedules) && schedules.length > 0) {
-        maxId = Math.max(...schedules.map(s => Number(s.id) || 0));
+    let allSchedules = await getAllItems() || [];
+    if (Array.isArray(allSchedules) && allSchedules.length > 0) {
+        maxId = Math.max(...allSchedules.map(s => Number(s.id) || 0));
     }
     const newId = maxId + 1;
 
@@ -595,11 +578,11 @@ async function addItem() {
             id: newId,
             name,
             description: description || "No description provided",
-            date: date,
+            date,
             starting: starting || null,
             ending: ending || null,
-            category: itemCategory || 'other',
-            email: user.email, // if needed by backend
+            category: itemCategory,
+            email: user.email,
             username: user.username,
             password: user.password
         };
@@ -627,125 +610,16 @@ async function remove(id, swalAlert) {
             }).then(async (result) => {
             if (result.isConfirmed) {
                 localStorage.setItem(`checkbox_${id}`, false);
-                //localStorage.setItem('deletedItem', JSON.stringify(schedules.filter(schedule => schedule.id === id)));
-                /*schedules = schedules.filter(schedule => schedule.id !== id);
-                localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));*/
                 deleteScheduleById(id);
                 schedules = await getSchedulesByEmail(user.email);
                 start();
-                /*Swal.fire({
-                    toast: true,
-                    text: "Item removed successfully",
-                    position: 'bottom',
-                    timer: 5000,
-                    timerProgressBar: true,
-                    showConfirmButton: true,
-                    confirmButtonText: 'Undo',
-                    confirmButtonColor: '#3085d6',
-                }).then((result) => {a
-                    if (result.isConfirmed) {
-                        const deletedItem = JSON.parse(localStorage.getItem('deletedItem'));
-                        if (deletedItem && deletedItem.length > 0) {
-                            schedules.push(deletedItem[0]);
-                            localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));
-                            localStorage.removeItem('deletedItem');
-                            start();
-                        }
-                    }
-                })*/
                 if (allItems && schedules.length > 0) viewAll();
             } else if (result.isDenied) {}
         });
     } else {
             deleteScheduleById(id);
             start();
-            /*schedules = schedules.filter(schedule => schedule.id !== id);
-            localStorage.setItem('schedules_' + user.username, JSON.stringify(schedules));*/
     }
-}
-
-function addStyles() {
-  const style = document.createElement('style');
-  style.innerHTML = `
-    #scheduleContainer {
-      width: 100%;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-      max-width: 960px;
-      margin: 0 auto;
-    }
-
-    .item {
-      border: 3px solid #90CAF9;
-      padding: 16px;
-      border-radius: 10px;
-      background-color: #E3F2FD;
-      width: 220px;
-      height: 250px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease;
-    }
-
-    .item:hover {
-      transform: scale(1.02);
-    }
-
-    .item h2 {
-      margin: 0 0 8px 0;
-      font-size: 20px;
-      color: #1976D2;
-    }
-
-    .item p {
-      margin: 4px 0;
-      color: #424242;
-      font-size: 14px;
-    }
-
-    .item button {
-      margin-top: 10px;
-      padding: 8px;
-      background-color: white;
-      border: 2px solid #2196F3;
-      border-radius: 8px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .item button:hover {
-      background-color: #E3F2FD;
-    }
-    .item {
-      position: relative;
-    }
-
-    .checkbox-wrapper {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-    }
-
-    .checkbox-wrapper input[type="checkbox"] {
-      transform: scale(1.2);
-      cursor: pointer;
-    }
-
-    .item button[onclick^="remove("] {
-      background-color: #EF9A9A;
-      color: white;
-      border: 2px solid #E57373;
-    }
-
-    .item button[onclick^="remove("]:hover {
-      background-color: #E57373;
-    }
-  `;
-  document.head.appendChild(style);
 }
 
 async function viewAll() {
@@ -757,24 +631,12 @@ async function viewAll() {
 
     schedules = await getSchedulesByEmail(user.email);
 
-    /*
-        <select id="categorySelector" onchange="allData(this.value);">
-            <option value="All">All Categories</option>
-            <option value="work">Work</option>
-            <option value="personal">Personal</option>
-            <option value="shopping">Shopping</option>
-            <option value="todo">To-Do</option>
-            <option value="other">Other</option>
-        </select>
-    */
-
     document.body.innerHTML = `
         <h1>All Schedules</h1>
         <button onclick="allItems = false; start()">Back to Dashboard</button>
         <div id="scheduleContainer"></div>
     `;
 
-    container = document.querySelector('#scheduleContainer');
     allData();
 }
 
@@ -923,11 +785,10 @@ async function addXP(amount) {
         console.warn("User not logged in, cannot add XP.");
         return;
     }
-    let xp = await getXP(); // get XP from backend
+    let xp = await getXP();
     xp += amount;
     localStorage.setItem('xp_' + user.username, JSON.stringify(xp));
 
-    // Update XP in backend
     try {
         await fetch(`https://timely-zc0n.onrender.com/users/${encodeURIComponent(user.email)}`, {
             method: 'PUT',
@@ -947,6 +808,20 @@ async function addXP(amount) {
         });
     }
     updateXpDisplay();
+    if (amount == 1) addProductivity(5);
+    if (amount == 5) addProductivity(15);
+}
+
+function addProductivity(amount) {
+    const productivity = document.getElementById('productivityMeter');
+    if (!productivity) return;
+
+    let value = Number(localStorage.getItem('productivity') || 0);
+    value += amount;
+    if (value < 0) value = 0;
+
+    localStorage.setItem('productivity', value);
+    productivity.value = value;
 }
 
 async function getXP() {
@@ -983,15 +858,6 @@ function done(id) {
     }
 }
 
-async function displayTime() {
-    while (true) {
-        await delay(100);
-        const now = new Date();
-        const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        document.getElementById('timeDisplay').innerText = time;
-    }
-}
-
 async function notices() {
     const now = new Date();
     const todaysDate = now.toLocaleDateString('en-US', {
@@ -1001,18 +867,8 @@ async function notices() {
     });
     document.body.innerHTML = `
         <h1>Notices for ${todaysDate}</h1>
-        <p>Thank you for your patience for Timely 2.0.0! We aim to release this new version around the start<br>
-        of July. All current user data will be removed, meaning that your account will be reset. As mentioned in the<br>
-        previous notice, all user data will be erased as we will be re-writing how the app works
-        <br>
-        <br>
-        This will be one of our last calls for user data. If you would like to be able to restore data, please<br>
-        contact us at the same email you signed up for Timely with, and provide us any account details you<br>
-        want to be saved and restored.
-        <br>
-        <br>.
-        We are currently working on Update 2.0.0 and are progressing well! We expect for the update to release earlier<br>
-        than expected, perhaps tomorrow or early July.
+        <p>We have officially launched Update 2.1.0! In this update, we bring to you our new AI assistant, T.I.M. (Timely <br>Intelligence Mechanism)
+        T.I.M. helps you create schedules from a simple prompt, a costly but useful feature!
         <br>
         <br>
         <strong>That's all the notices for now! Come back another time for more!</strong></p>
@@ -1028,10 +884,425 @@ async function openNotices() {
 
 openNotices();
 
-displayTime();
+function decayProductivity() {
+    const productivityMeter = document.getElementById('productivityMeter');
+    if (productivityMeter) {
+        let productivity = parseFloat(localStorage.getItem('productivity')) || 0;
+        let lastActivity = parseInt(localStorage.getItem('lastActivityTimestamp')) || Date.now();
 
-/* Update 2.0.0
-    Cloud Sync using Backend
-    Easy to remember domain
-    Cloud sync status
-*/
+        const currentTime = Date.now();
+        const timeElapsed = currentTime - lastActivity; // Time in milliseconds
+
+        const decayIntervalMs = 3600000; // 1 hour in milliseconds
+        const decayAmountPerHour = 5; // Amount productivity decreases per hour of inactivity
+
+        // Calculate how many decay intervals have passed
+        const intervalsPassed = Math.floor(timeElapsed / decayIntervalMs);
+
+        if (intervalsPassed > 0) {
+            productivity -= (intervalsPassed * decayAmountPerHour);
+            if (productivity < 0) productivity = 0; // Ensure productivity doesn't go below 0
+
+            localStorage.setItem('productivity', JSON.stringify(productivity));
+            productivityMeter.value = productivity;
+
+            // Update the last activity timestamp to reflect the decay applied
+            localStorage.setItem('lastActivityTimestamp', JSON.stringify(lastActivity + (intervalsPassed * decayIntervalMs)));
+        }   
+    }
+}
+
+async function summariseDay() {
+    const todaysTasks = schedules.filter(task => {
+        const taskDate = task.itemDate.split("T")[0];
+        return taskDate === pickedDate;
+    });
+
+    if (localStorage.getItem('summary')) {
+            const prevTasks = localStorage.getItem('previousTasks');
+
+            if (prevTasks && prevTasks === JSON.stringify(todaysTasks)) {
+                return localStorage.getItem('summary');
+            }
+    }
+
+    const sumPrompt = `You are Lumen AI, built to generate short, conversational daily summaries for the Timely app.
+    Your output must be one paragraph, or two connected paragraphs at most.
+    Speak casually, naturally, and directly to the user. No bullet points, no rigid formatting, no overly formal sign-offs.
+
+    Only summarize tasks that belong to today’s date.
+    The schedule data will include an ISO date string in itemDate.
+    A task is considered “today” only if itemDate.split("T")[0] exactly matches the current date: ${pickedDate}.
+    Ignore all other tasks, even if they look similar or recent.
+
+    Rewrite all task names into natural, human descriptions.
+    Do not repeat the task name verbatim.
+    Example rewrites:
+
+    “Eat food” → “eating food” or “eat something.”
+
+    “Drink water” → “stay hydrated.”
+
+    “Freelance work” → “put in some grind time.”
+
+    “Gym” → “hit the gym” or “work out.”
+
+    Tense Logic (follow EXACTLY):
+
+    Before writing the summary, determine whether each activity is past, ongoing, or in the future by comparing its time with the current time.
+
+    Use this logic:
+
+    Convert all HH:MM times to minutes since midnight.
+
+    Convert the current time (${new Date().toLocaleTimeString()}) to minutes since midnight.
+
+    If endTime < currentTime: past tense (“you had,” “you wrapped up”).
+
+    If startTime > currentTime: future tense (“you have coming up,” “you’re planning to”).
+
+    If startTime ≤ currentTime ≤ endTime or the task has no end time: ongoing tense (“you’re currently doing”).
+
+    Never assume a task already happened unless this comparison confirms it.
+
+    Todays tasks:
+    ${JSON.stringify(todaysTasks)}
+
+    If there are no tasks for today, write a very short and friendly two-sentence message letting the user know nothing is logged and encourage them to plan tomorrow.
+    `;
+    const sumLoad = {
+        type: 'chat',
+        prompt: 'No prompt needed.',
+        system: sumPrompt,
+        model: 'gpt-3.5-turbo',
+    };
+    
+    const sumRes = await fetch('https://lumen-ai.onrender.com/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sumLoad)
+    }); 
+    const sumData = await sumRes.json();
+    let summary = sumData.response || sumData.reply || sumData.choices?.[0]?.message?.content || '';
+    
+    localStorage.setItem('previousTasks', JSON.stringify(todaysTasks));
+    localStorage.setItem('summary', summary);
+    return summary;
+}
+
+async function renderDashboard() {
+    const user = JSON.parse(localStorage.getItem('savedUser'));
+    const todaysDate = getLocalDate();
+
+    const todaysTasks = schedules.filter(task => {
+        const taskDate = task.itemDate.split("T")[0];
+        return taskDate === todaysDate;
+    });
+
+    const todayCount = todaysTasks.length;
+    const allCount = schedules.length;
+
+    document.body.innerHTML = `
+        <div class="app-wrapper">
+            <div class="summary-card">
+                <div class="summary-text">
+                    <h1 class="greeting">Good ${getCurrentTime()}, ${user.username} 👋</h1>
+                    <p class="subtitle">Here’s your game plan</p>
+                    <div class="day-stats">
+                        <div class="stat-box">
+                            <span class="stat-number" id="taskCount">${todayCount}</span>
+                            <span class="stat-label">tasks</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number" id="streakCount">${await getXP()}</span>
+                            <span class="stat-label">XP</span>
+                        </div>
+                    </div>
+                    <p id="dailySummary" class="daily-summary">${await summariseDay() ? await summariseDay() : "Loading your day summary…"}</p>
+                </div>
+                <div class="lumen-orb" onclick="AImenu()"></div>
+            </div>
+
+            <div class="time-tabs">
+                <button class="tab active" id="tabToday">Today</button>
+                <button class="tab" id="tabAll">All Tasks</button>
+            </div>
+
+            <h2 class="tasks-title">Tasks</h2>
+
+            <div id="scheduleContainer" class="task-list"></div>
+
+            <button class="add-task-btn" onclick="newItem()">+ Add Task</button>
+        </div>
+    `;
+
+    document.getElementById("tabToday").onclick = () => {
+        document.getElementById("taskCount").textContent = todaysTasks.length;
+        document.getElementById("tabToday").classList.add("active");
+        document.getElementById("tabAll").classList.remove("active");
+        allItems = false;
+        pickedDate = todaysDate;
+        data();
+    };
+
+    document.getElementById("tabAll").onclick = () => {
+        document.getElementById("taskCount").textContent = schedules.length;
+        document.getElementById("tabAll").classList.add("active");
+        document.getElementById("tabToday").classList.remove("active");
+        allItems = true;
+        allData();
+    };
+}
+
+function AImenu() {
+    Swal.fire({
+        title: "AI Control Panel",
+        text: "Choose your operational pathway, chief.",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonText: "Chat with Lumen",
+        cancelButtonText: "Smart Suggestions",
+        reverseButtons: true,
+        backdrop: true,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            lumenChat(); 
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            smartSuggestionsTime();
+        }
+    });
+}
+
+async function lumenChat() {
+    document.body.innerHTML = `
+        <div class="chat-wrapper">
+            <div class="chat-card">
+                <h2 class="chat-title">Lumen AI</h2>
+                <button onclick="lumenChat()" class="chat-refresh" title="Refresh Chat">⟳</button>
+                <div id="chatContainer" class="chat-container">
+                    <div class="initial-suggestions">
+                        <button onclick="document.getElementById('userInput').value = 'Generate a summary of my day'; lumenTalk();">Generate a summary of my day</button>
+                        <button onclick="document.getElementById('userInput').value = 'Add Eat Food today at 3pm today'; lumenTalk();">Add Eat Food today at 3pm</button>
+                        <button onclick="document.getElementById('userInput').value = 'Suggest productive tasks to do in my free time'; lumenTalk();">Suggest productive tasks to do in my free time</button>
+                    </div>
+                </div>
+
+
+                <div class="chat-input-box">
+                    <input type="text" id="userInput" placeholder="Ask Lumen anything..." class="chat-input">
+                    <button onclick="lumenTalk()" class="chat-send">Send</button>
+                </div>
+
+                <button onclick="start()" class="chat-back">← Back</button>
+            </div>
+        </div>
+    `;
+}
+
+
+let lumenHistory = [];
+
+async function lumenTalk() {
+    const inputEl = document.getElementById("userInput");
+    const container = document.getElementById("chatContainer");
+
+    if (!inputEl || !container) return;
+
+    const userText = inputEl.value.trim();
+    if (!userText) return;
+
+    // Remove initial suggestions
+    const suggestionButtons = document.querySelector('.initial-suggestions');
+    if (suggestionButtons) suggestionButtons.remove();
+
+    // Display user message
+    container.innerHTML += `<div class="msg user-msg">${userText}</div>`;
+    container.scrollTop = container.scrollHeight;
+
+    // Save message to history
+    lumenHistory.push({ role: "user", content: userText });
+    inputEl.value = "";
+
+    const todaysTasks = schedules.filter(
+        task => task.itemDate.split("T")[0] === pickedDate
+    );
+
+    const lumenPrompt = `
+        You are Lumen AI for the Timely app.
+
+        ## CORE BEHAVIOR RULES (FOLLOW EXACTLY)
+
+        0. If the user asks for suggestions, ideas, recommendations, or asks what they should do,
+           reply in WORDS ONLY. Do NOT create tasks unless the user provides a clear task name.
+
+        1. If the user gives a specific task name to add, output ONLY JSON object(s). No words.
+
+        2. Never speak normally when generating JSON. JSON ONLY.
+
+        3. JSON must include:
+           id, username, email, password,
+           itemName, itemDescription,
+           itemDate, itemStart, itemEnd, itemCategory.
+
+        4. ID = random number 0–999999999.
+
+        5. itemName max 2 words; itemDescription max 4 words.
+
+        6. Missing details:
+           - description = "No description provided"
+           - guess category
+           - guess times if needed
+
+        7. Multiple tasks → return array.
+
+        8. Use TODAY unless user says otherwise.
+
+        9. Never include errors or internal logic.
+
+        10. "What's on my schedule?" → WORDS ONLY.
+
+        11. Any question → WORDS ONLY.
+
+        12. Day summary → WORDS ONLY.
+
+        13. Never create tasks unless user clearly gives a task name.
+
+        14. Friendly, casual tone in WORDS mode.
+
+        15. Do NOT assume user wants a task added.
+
+        Today's date: ${pickedDate}
+        Current time: ${new Date().toLocaleTimeString()}
+        User data: ${JSON.stringify(user)}
+        Today's tasks: ${JSON.stringify(todaysTasks)}
+        Full schedule: ${JSON.stringify(schedules)}
+        Chat history: ${lumenHistory.map(m => `${m.role}: ${m.content}`).join(" | ")}
+    `;
+
+    const historyText = lumenHistory
+        .map(msg => `${msg.role.toUpperCase()}: ${msg.content}`)
+        .join("\n");
+
+    const lumenLoad = {
+        type: "chat",
+        model: "gpt-5-mini",
+        system: lumenPrompt,
+        prompt: `${historyText}\nUSER: ${userText}\nASSISTANT:`
+    };
+
+    const lumenRes = await fetch("https://lumen-ai.onrender.com/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(lumenLoad)
+    });
+
+    let replyRaw = "";
+    let reply = "";
+
+    try {
+        const lumenData = await lumenRes.json();
+        replyRaw = lumenData.response ||
+                   lumenData.reply ||
+                   lumenData.choices?.[0]?.message?.content ||
+                   "";
+        reply = replyRaw.trim();
+    } catch (e) {
+        reply = "Something broke on my end 😭 try again?";
+    }
+
+    lumenHistory.push({ role: "assistant", content: reply });
+
+    const isJSON = reply.startsWith("{") || reply.startsWith("[");
+
+    if (!isJSON) {
+        container.innerHTML += `<div class="msg lumen-msg">${reply}</div>`;
+        container.scrollTop = container.scrollHeight;
+        return;
+    }
+    const parsed = extractJSONFromString(reply);
+
+    if (!parsed) {
+        container.innerHTML += `<div class="msg lumen-msg">I couldn't read that 😭 Try again?</div>`;
+        return;
+    }
+
+    if (Array.isArray(parsed)) {
+        for (const item of parsed) await addScheduleToBackend(item);
+    } else {
+        await addScheduleToBackend(parsed);
+    }
+
+    container.innerHTML += `<div class="msg ai-msg">Added to your schedule.</div>`;
+    container.scrollTop = container.scrollHeight;
+}
+
+
+function getTodaysTasksWithStatus(schedules) {
+    const today = new Date().toISOString().split("T")[0];
+
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    return schedules
+        .filter(task => task.itemDate.split("T")[0] === today)
+        .map(task => {
+            // Convert time "HH:MM" into minutes
+            const toMinutes = t => {
+                if (!t) return null;
+                const [h, m] = t.split(":").map(Number);
+                return h * 60 + m;
+            };
+
+            const start = toMinutes(task.itemStart);
+            const end = task.itemEnd ? toMinutes(task.itemEnd) : null;
+
+            // Determine tense
+            let tense;
+            if (end !== null && end < currentMinutes) {
+                tense = "past";
+            } else if (start > currentMinutes) {
+                tense = "future";
+            } else if (start <= currentMinutes && (end === null || currentMinutes <= end)) {
+                tense = "ongoing";
+            } else {
+                tense = "future";
+            }
+
+            // Determine completion:
+            // 1. If user ticked the checkbox → completed
+            // 2. If end time passed AND no checkbox → completed by time
+            // 3. Otherwise pending
+            const checkboxDone = JSON.parse(localStorage.getItem(`checkbox_${task.id}`)) || false;
+
+            const completedByTime = end !== null && end < currentMinutes;
+            const completed = checkboxDone || completedByTime;
+
+            return {
+                ...task,
+                tense,
+                completed
+            };
+        });
+}
+
+function getLocalDate() {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().split("T")[0];
+}
+
+function extractJSONFromString(str) {
+    try {
+        // Find the first { and last }
+        const start = str.indexOf("{");
+        const end = str.lastIndexOf("}");
+
+        if (start === -1 || end === -1) return null;
+
+        const jsonStr = str.slice(start, end + 1);
+        return JSON.parse(jsonStr);
+
+    } catch (e) {
+        return null;
+    }
+}
