@@ -1,216 +1,393 @@
 body {
-    background: #90caf9;
-    color: #1a237e;
-    font-family: "Quicksand", sans-serif;
-    transition: all 0.3s ease;
-    min-height: 100vh;
     margin: 0;
+    padding: 0;
+    background: linear-gradient(to bottom right, #e8f3ff, #f7fbff);
+    font-family: "Inter", sans-serif;
+    color: #1a1a1a;
+}
+
+.app-wrapper {
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
     padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* This centers all direct children of body */
-    text-align: center;
     box-sizing: border-box;
-    overflow-y: auto;
 }
 
-#xpDisplay, a[data-action="share/whatsapp/share"] {
-    margin-bottom: 10px;
+.summary-card {
+    background: white;
+    border-radius: 22px;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    margin-bottom: 30px;
 }
 
-/* Specific styling for the main action buttons and date input */
-body > button,
-body > input[type="date"] {
-    width: auto;
-    min-width: 180px;
-    max-width: 250px;
-    margin: 8px auto; /* Centered horizontally */
-    display: block;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+.summary-text {
+    max-width: 70%;
+}
+
+.greeting {
+    font-size: 28px;
+    margin: 0;
+    font-weight: 700;
+}
+
+.subtitle {
+    margin-top: 5px;
+    font-size: 15px;
+    color: #555;
+}
+
+.day-stats {
+    display: flex;
+    gap: 22px;
+    margin-top: 18px;
+}
+
+.stat-box {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 26px;
+    font-weight: 700;
+    color: #2c6df7;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #777;
+}
+
+.daily-summary {
+    margin-top: 18px;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.lumen-orb {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #8ab6ff, #3e7bff);
+    box-shadow: 0 0 25px rgba(62, 123, 255, 0.55);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.lumen-orb:hover {
+    transform: scale(1.08);
+}
+
+.time-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.tab {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    background: #e8efff;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.tab.active {
+    background: #2c6df7;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(44,109,247,0.3);
+}
+
+.tasks-title {
+    margin-top: 5px;
+    margin-bottom: 12px;
+    font-size: 22px;
     font-weight: 600;
 }
 
-h1 + button {
-    margin-top: 15px;
+.task-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 18px;
 }
 
-/* Updated #scheduleContainer styling */
-#scheduleContainer {
-    width: 100%;
-    max-width: 960px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px; /* This handles the spacing between items */
-    justify-content: center; /* This centers the items within the container */
-    margin-top: 20px; /* Add some top margin to separate it from the date picker */
-    /* Make sure this is not overridden by dynamic styles */
-}
-
-/* Updated .item styling */
 .item {
-    border: 3px solid #90CAF9;
+    background: white;
     padding: 16px;
-    border-radius: 10px;
-    background-color: #E3F2FD;
-    width: 220px;
-    height: 250px;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    position: relative;
+    min-height: 190px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
-    box-sizing: border-box;
-    /* Ensure no conflicting margins are applied here */
+    transition: transform 0.15s ease;
 }
 
 .item:hover {
-    transform: scale(1.02);
+    transform: translateY(-3px);
 }
 
 .item h2 {
-    margin: 0 0 8px 0;
-    font-size: 20px;
-    color: #1976D2;
+    font-size: 18px;
+    margin: 0 0 5px;
+    font-weight: 600;
+    color: #2c6df7;
 }
 
 .item p {
-    margin: 4px 0;
-    color: #424242;
+    margin: 3px 0;
     font-size: 14px;
-}
-
-.item button {
-    margin-top: 10px;
-    padding: 8px;
-    background-color: white;
-    border: 2px solid #2196F3;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.item button:hover {
-    background-color: #E3F2FD;
-}
-
-.item {
-    position: relative;
+    color: #444;
 }
 
 .checkbox-wrapper {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 12px;
+    right: 12px;
 }
 
-.checkbox-wrapper input[type="checkbox"] {
-    transform: scale(1.2);
+.checkbox-wrapper input {
+    transform: scale(1.3);
     cursor: pointer;
 }
 
-.item button[onclick^="remove("] {
-    background-color: #EF9A9A;
+.item-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+}
+
+.edit-button,
+.remove-button {
+    flex: 1;
+    padding: 8px 0;
+    font-size: 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.edit-button {
+    background: #e8f1ff;
+    color: #2c6df7;
+    margin-right: 8px;
+}
+
+.remove-button {
+    background: #ffe3e3;
+    color: #d9534f;
+}
+
+.add-task-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 30px;
+    background: #2c6df7;
     color: white;
-    border: 2px solid #E57373;
-}
-
-.item button[onclick^="remove("]:hover {
-    background-color: #E57373;
-}
-
-input[type="date"] {
-    padding: 8px 12px;
-    border: 2px solid #64b5f6;
-    border-radius: 8px;
-    font-size: 16px;
-    color: #1a237e;
-    background-color: white;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-input[type="date"]:hover {
-    border-color: #42a5f5;
-}
-
-#xpDisplay {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #0d47a1;
-    margin-bottom: 15px;
-}
-
-a[data-action="share/whatsapp/share"] {
-    color: #1976D2;
-    text-decoration: none;
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
     font-weight: 600;
-    margin-bottom: 20px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: fit-content;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(44,109,247,0.35);
+    transition: 0.2s ease;
 }
 
-a[data-action="share/whatsapp/share"]:hover {
-    text-decoration: underline;
+.add-task-btn:hover {
+    transform: translateY(-2px);
 }
-
-p#xpDisplay + h1 {
-    margin-top: 0;
-}
-
-.ti-btn.green { background-color: #4CAF50; color: white; border: none; padding: 5px 20px; border-radius: 8px; margin-top: 2px; }
-.ti-btn.blue { background-color: #3085d6; color: white; border: none; padding: 5px 20px; border-radius: 8px; margin-top: 2px; }
-.ti-btn.red { background-color: #d33; color: white; border: none; padding: 5px 20px; border-radius: 8px; margin-top: 2px; }
 
 .done {
-    opacity: 0.5;
+    opacity: 0.55;
 }
 
-.notDone {
+.not-done {
     opacity: 1;
 }
 
-#logout:hover {
-    background-color: #f44336;
-    color: white;
-}
-
-/* New styles for icon buttons */
-.icon-button {
-    background-color: transparent;
-    border: none;
-    padding: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px; /* Adjust as needed */
-    height: 40px; /* Adjust as needed */
-    border-radius: 50%; /* Makes it circular */
-    transition: background-color 0.3s ease;
-}
-
-.icon-button img {
-    width: 24px; /* Size of the SVG icon */
-    height: 24px; /* Size of the SVG icon */
-}
-
-.edit-button:hover {
-    background-color: rgba(25, 118, 210, 0.2); /* Lighter blue for hover */
-}
-
-.remove-button:hover {
-    background-color: rgba(211, 51, 51, 0.2); /* Lighter red for hover */
-}
-
-/* Adjustments for button container within .item-actions */
-.item-buttons {
-    display: flex;
-    justify-content: space-around; /* Distribute buttons evenly */
-    align-items: center;
+.user-input {
     width: 100%;
+    max-width: 600px;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #2c6df7;
+    margin-top: 10px;
+}
+
+.send-button,
+.back-button {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: #2c6df7;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.container {
+    max-width: 600px;
+    height: 350px;
+    overflow-y: auto;
+    border-radius: 10px;
+    padding: 10px;
+    background: white;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.chat-wrapper {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chat-card {
+    width: 100%;
+    max-width: 600px;
+    background: white;
+    padding: 22px;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+}
+
+.chat-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    color: #2c6df7;
+}
+
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    margin-top: 15px;
+    background: #f5f7ff;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.msg {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.user-msg {
+    align-self: flex-end;
+    background: #2c6df7;
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.ai-msg {
+}
+
+.chat-input-box {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid #2c6df7;
+    font-size: 15px;
+}
+
+.chat-send {
+    padding: 12px 18px;
+    background: #2c6df7;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.chat-back {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: #e8efff;
+    color: #2c6df7;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    align-self: flex-start;
+}
+
+.chat-container button {
+    width: 100%;
+    padding: 12px;
+    background: #e8f0ff;
+    color: #2c6df7;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 10px;
+    text-align: left;
+    transition: 0.2s ease;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.chat-container button:hover {
+    background: #2c6df7;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.chat-container button:active {
+    transform: scale(0.98);
+}
+
+.chat-refresh {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #e8f0ff;
+    color: #2c6df7;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    transition: 0.2s ease;
+}
+
+.chat-refresh:hover {
+    background: #2c6df7;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.chat-refresh:active {
+    transform: scale(0.96);
 }
