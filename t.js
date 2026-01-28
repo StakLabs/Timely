@@ -161,6 +161,8 @@ async function start() {
             <button onclick="window.location.href='https://www.timelypro.online/login.html'">Go to Login</button>
         `;
         document.head.innerHTML = `
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3927114728284023"
+     crossorigin="anonymous"></script>
         <meta name="google-adsense-account" content="ca-pub-3927114728284023">`;
         return;
     }
