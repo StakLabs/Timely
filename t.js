@@ -159,8 +159,9 @@ async function start() {
             <h1>Error Code 402 - Payment Required, Not Logged In</h1>
             <p>Please log in to access Timely.</p>
             <button onclick="window.location.href='https://www.timelypro.online/login.html'">Go to Login</button>
-            <meta name="google-adsense-account" content="ca-pub-3927114728284023">
         `;
+        document.head.innerHTML = `
+        <meta name="google-adsense-account" content="ca-pub-3927114728284023">`;
         return;
     }
 
