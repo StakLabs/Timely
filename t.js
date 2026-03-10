@@ -1,3 +1,204 @@
+var email
+
+var password
+
+var clicked;
+
+var username
+
+var savedusername = '';
+
+const verifypath = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+
+//JSON.parse(localStorage.getItem('users'))
+
+let users = [{
+    username: 'Ayaan',
+    email: 'ayaan.khalique3@gmail.com',
+    password: 'sd'
+}, {
+    username: 'Khalique',
+    email: 'khaliquer@gmail.com',
+    password: 'Oyster@22'
+}, {
+    username: 'Iron Woman',
+    email: 'nicezara@gmail.com',
+    password: 'apple'
+}, {
+    username: 'Emaan',
+    email: 'emaan.khalique@gmail.com',
+    password: 'nothing'
+}, {
+    username: 'Wasiullah Qureshi',
+    email: 'wasiullahqureshi@gmail.com',
+    password: 'hi'
+}];
+/*
+[{
+    username: 'Ayaan',
+    email: 'ayaan@example.com',
+    password: 'student123'
+}, {
+    username: 'Wasiullah',
+    email: 'wasiullah@example.com', 
+    password: 'teacher321'
+}]
+*/
+
+async function signin() {
+    email = document.getElementById('email').value
+    email = email.toLowerCase();
+    password = document.getElementById('password').value
+    username = document.getElementById('username').value
+    //fetched data
+    //fetching updated user from local storage
+    users = users;
+    users.forEach(async (check) => {
+        //console.log(x);
+        //debugger;
+        if(check.username == username){
+            if (email.match(verifypath)) {
+                if (check.email == email) {
+                    if (check.password == password) {
+                        //alert('Welcome ' + check.username + '!')
+                        savedusername += localStorage.setItem('savedusername', JSON.stringify(username));
+                        const user = users.find(u => u.email === email);
+                        localStorage.setItem('savedUser', JSON.stringify(user));
+                        document.querySelector('.all').classList.add('hidden');
+                        document.body.innerHTML += '<div id="load"></div>';
+                        document.getElementById('load').classList.add('load');
+                        //await delay(4000);
+                        //window.location.href = "http://127.0.0.1:5500/Timely%20-%20Scheduling%20Site/Timely/t.html";
+                        start();
+                        window.location.href="";
+                        savedusername = '';
+                    }
+                }
+                else {
+                    random = Math.random()
+                
+                    if (random < 0.5) {
+                        alert('Please Check Username or Email');
+                    }
+                    else {
+                        alert('Please Check Email or Password');
+                    }
+                }   
+            }
+            else {
+                alert('Please enter valid email')
+            }
+        }
+        else {
+            //alert('Please Check Username or Email');
+        }
+    });
+    //verifyemail(email)*/
+}
+
+function signup(newId) {
+    email = document.getElementById('email2').value
+    password = document.getElementById('password2').value
+    username = document.getElementById('username2').value
+
+    var newId
+
+    if (users.length == 0) {
+        newId = 0;
+    }
+    else {
+        newId = users.length
+    }
+
+    if (!CheckUserExist(email)) {
+        if (email.match(verifypath)) {
+            if (username && password) {
+                const newuser = {
+                username,
+                email,
+                password,
+                id: newId
+                }
+                users = JSON.parse(localStorage.getItem('users')) ? JSON.parse(localStorage.getItem('users')) : []
+                users.push(newuser);
+                alert('Thanks for Signing Up ' + username + '! Please Sign In to Continue')
+                localStorage.setItem('users', JSON.stringify(users));
+
+            }
+            else {
+                alert('Please Fill in Form Completely')
+            }
+        }
+        else {
+            alert('Please Input a Valid Email')
+        }
+    
+    }
+    else {
+        alert('That Email is Already Registered');
+    }
+}
+
+function CheckUserExist(email) {
+
+    //fetching updated user from local storage
+    users = JSON.parse(localStorage.getItem('users')) ? JSON.parse(localStorage.getItem('users')) : []
+    let doesExist = false
+    //debugger;
+    users.forEach((check) => {
+       if (check.email == email) {
+        doesExist = true;
+       }
+    });
+    return doesExist;
+}
+
+
+async function forgotPassword() {
+    if (localStorage) {
+        window.location.href="Forgot-Password.html";
+    }
+}
+
+function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+//localStorage.clear()
+//johndoe@example.com
+//teacher321
+//student123
+//0187009@schoolsnet.act.edu.au
+
+/*
+when signed in:
+set local storage for login user
+redirect to new page
+do not allow user to paste url in browser
+allow hompage to only allow users
+localStorage.setItem('xyz', 'login successfully');
+say welcome username in alert message
+*/
+
+function membership() {
+    if (!clicked) {
+        document.querySelector('.membership').innerText = 'Click to hide membership details';
+        clicked = true;
+        document.body.innerHTML += `<table>
+                                        <tr>
+                                            <th></th>
+                                            <th>Free</th>
+                                            <th>Premium</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Access to all buttons</td>
+                                            <td>No</td>
+                                            <td>Yes</td>
+                                    </table>`
+    } else {
+        document.querySelector('.membership').innerText = 'Click to show membership details';
+        clicked = false;
+    }
+}
+
 const suggestions = {
     'Early Morning': [
         'Morning Yoga', 'Breakfast', 'Reading'
@@ -156,9 +357,25 @@ async function start() {
 
     if (!user) {
         document.body.innerHTML = `
-            <h1>Error Code 402 - Payment Required, Not Logged In</h1>
-            <p>Please log in to access Timely.</p>
-            <button onclick="window.location.href='https://www.timelypro.online/login.html'">Go to Login</button>
+            <div class="all">
+                <h3>Sign In to Timely</h3>
+            <input class="inputs" onkeydown="//onkeydown" id="username" placeholder="Username">
+            <br>
+            <br>
+            <input class="inputs" onkeydown="//onkeydown" id="email" placeholder="Email">
+            <br>
+            <br>
+            <input class="inputs" type="password" id="password" placeholder="Password">
+            <br>
+            <br>
+            <button onclick="signin()" class="sign-in-button">Sign In</button>
+            <br>
+            <br>
+            <!--<a class="fP" onclick="forgotPassword()">Forgot Password?</a>-->
+            <br>
+            <p>Email us at <a href="mailto:ayaan.khalique3@gmail.com">ayaan.khalique3@gmail.com</a> to sign up for an account.<br>You can tell us if you want a 3 day free trial!</p>
+            <!--<a class="membership" onclick="membership()">Click to view membership details</a>-->
+            </div>
         `;
         document.head.innerHTML = `
         <meta name="google-adsense-account" content="ca-pub-3927114728284023">`;
@@ -717,7 +934,74 @@ function getCurrentTime() {
     }
 }
 
-function smartSuggestionsTime() {
+async function smartSuggestionsTime() {
+    const currentUser = JSON.parse(localStorage.getItem('savedUser'));
+    if (!currentUser) return;
+
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        title: "Lumen is thinking...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    const shouldSuggestMove = Math.random() > 0.5 && schedules && schedules.length > 0;
+
+    if (shouldSuggestMove) {
+        try {
+            const response = await fetchLumen({
+                type: "chat",
+                model: "gemini-2.5-flash",
+                prompt: `
+You are Timely's AI assistant.
+Suggest moving ONE existing task to a better time today. Limit your response to exactly one sentence.
+Format: "Maybe you should consider moving [Task Name] to [New Time]." or "I found a [Time Period] slot that might be better for [Task Name] at [New Time]."
+User schedule: ${JSON.stringify(schedules)}
+`
+            });
+
+            const rawText = response.text || response.response || response.reply || response.choices?.[0]?.message?.content;
+            const suggestionText = rawText ? rawText.trim() : null;
+
+            if (suggestionText) {
+                Swal.close();
+
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    html: `
+                        <div class="ti-content">
+                            <div class="ti-text"><b>Timely Insight:</b> ${suggestionText}</div>
+                            <div class="ti-buttons">
+                                <button id="dismissBtn" class="ti-btn red">Dismiss</button>
+                            </div>
+                        </div>
+                    `,
+                    showConfirmButton: false,
+                    timer: 15000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                        toast.addEventListener('mouseleave', Swal.resumeTimer);
+
+                        document.getElementById('dismissBtn')?.addEventListener('click', () => Swal.close());
+                    }
+                });
+                return;
+            }
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    Swal.close();
+
     const randomSuggestion = timeSuggestions[Math.floor(Math.random() * timeSuggestions.length)];
 
     Swal.fire({
@@ -726,9 +1010,7 @@ function smartSuggestionsTime() {
         icon: 'info',
         html: `
             <div class="ti-content">
-                <div class="ti-text">
-                    <b>Timely Insight:</b> ${AIsuggestionORnot(randomSuggestion) ? 'You usually add ' : 'May I suggest: '} <i>${randomSuggestion}</i>${AIsuggestionORnot(randomSuggestion) ? ' around this time.' : '?'}
-                </div>
+                <div class="ti-text"><b>Timely Insight:</b> May I suggest: <i>${randomSuggestion}</i>?</div>
                 <div class="ti-buttons">
                     <button id="addTaskBtn" class="ti-btn green">Add</button>
                     <button id="suggestAnotherBtn" class="ti-btn blue">Next</button>
@@ -737,30 +1019,56 @@ function smartSuggestionsTime() {
             </div>
         `,
         showConfirmButton: false,
-        customClass: {
-            popup: 'ti-toast'
-        },
         timer: 10000,
         timerProgressBar: true,
         didOpen: (toast) => {
             toast.addEventListener('mouseenter', Swal.stopTimer);
             toast.addEventListener('mouseleave', Swal.resumeTimer);
 
-            document.getElementById('addTaskBtn').addEventListener('click', () => {
+            document.getElementById('addTaskBtn')?.addEventListener('click', () => {
                 Swal.close();
                 newItem(randomSuggestion);
             });
 
-            document.getElementById('suggestAnotherBtn').addEventListener('click', () => {
+            document.getElementById('suggestAnotherBtn')?.addEventListener('click', () => {
                 Swal.close();
                 smartSuggestionsTime();
             });
 
-            document.getElementById('dismissBtn').addEventListener('click', () => {
-                Swal.close();
-            });
+            document.getElementById('dismissBtn')?.addEventListener('click', () => Swal.close());
         }
     });
+}
+
+async function fetchLumen(promptObj) {
+    try {
+        const response = await fetch('https://lumen-ai.onrender.com/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(promptObj)
+        });
+        if (!response.ok) throw new Error('Lumen API request failed');
+        return await response.json(); // { text: "..." } expected
+    } catch (err) {
+        console.error('Error fetching Lumen:', err);
+        return { text: null };
+    }
+}
+
+// Helper to parse Lumen suggestion and move the task
+function moveTaskFromSuggestion(suggestionText) {
+    const match = suggestionText.match(/moving (.+) to (.+) because/i);
+    if (!match) return;
+
+    const taskName = match[1];
+    const newTime = match[2];
+
+    const taskIndex = schedules.findIndex(t => t.name === taskName);
+    if (taskIndex === -1) return;
+
+    schedules[taskIndex].time = newTime;
+    console.log(`Moved "${taskName}" to ${newTime}`);
+    // optionally refresh your UI here
 }
 
 function startSmartSuggestions(type) {
@@ -859,32 +1167,6 @@ function done(id) {
         document.querySelector(`#item_${id}`).classList.add('not-done');
     }
 }
-
-async function notices() {
-    const now = new Date();
-    const todaysDate = now.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-    document.body.innerHTML = `
-        <h1>Notices for ${todaysDate}</h1>
-        <p>We have officially launched Update 2.1.0! In this update, we bring to you our new AI assistant, T.I.M. (Timely <br>Intelligence Mechanism)
-        T.I.M. helps you create schedules from a simple prompt, a costly but useful feature!
-        <br>
-        <br>
-        <strong>That's all the notices for now! Come back another time for more!</strong></p>
-        <button onclick="start()">Back to homepage</button>
-    `
-    await delay(1000);
-    localStorage.setItem('notices2', true);
-}
-
-async function openNotices() {
-    if (!localStorage.getItem('notices2')) await delay(5000); notices();
-}
-
-openNotices();
 
 function decayProductivity() {
     const productivityMeter = document.getElementById('productivityMeter');
@@ -1062,17 +1344,127 @@ function AImenu() {
         text: "Choose your operational pathway, chief.",
         icon: "info",
         showCancelButton: true,
+        showDenyButton: true,
         confirmButtonText: "Chat with Lumen",
+        denyButtonText: "Generate My Day",
         cancelButtonText: "Smart Suggestions",
         reverseButtons: true,
         backdrop: true,
     }).then((result) => {
         if (result.isConfirmed) {
             lumenChat(); 
+        } else if (result.isDenied) {
+            generateMyDay();
         } else if (result.dismiss === Swal.DismissReason.cancel) {
             smartSuggestionsTime();
         }
     });
+}
+
+async function generateMyDay() {
+    Swal.fire({
+        title: "Generating your day...",
+        text: "Lumen is building the perfect schedule.",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    const allSchedules = schedules || [];
+
+    const systemPrompt = `
+You are Lumen AI for the Timely scheduling app.
+
+Create a balanced schedule for TODAY (${pickedDate}).
+
+Return ONLY JSON. No explanations.
+
+Each task MUST follow this structure:
+
+{
+"id": number,
+"username": "${user.username}",
+"email": "${user.email}",
+"password": "${user.password}",
+"itemName": "max 3 words",
+"itemDescription": "max 10 words",
+"itemDate": "${pickedDate}",
+"itemStart": "HH:MM",
+"itemEnd": "HH:MM",
+"itemCategory": "work | personal | shopping | todo | other"
+}
+
+Return a JSON array of tasks.
+`;
+
+    const userPrompt = `
+Existing schedule data:
+${JSON.stringify(allSchedules)}
+
+Generate a productive schedule for today.
+`;
+
+    const lumenLoad = {
+        type: "chat",
+        model: "gpt-5-mini",
+        system: systemPrompt,
+        prompt: userPrompt
+    };
+
+    try {
+        const res = await fetch("https://lumen-ai.onrender.com/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(lumenLoad)
+        });
+
+        const data = await res.json();
+
+        let reply =
+            data.response ||
+            data.reply ||
+            data.choices?.[0]?.message?.content ||
+            "";
+
+        reply = reply.trim()
+                     .replace(/^```json\s*/, '')
+                     .replace(/^```/, '')
+                     .replace(/```$/, '');
+
+        console.log("Lumen reply:", reply);
+
+        let parsed;
+        try {
+            parsed = JSON.parse(reply);
+        } catch (e) {
+            console.error("Failed to parse JSON:", e, reply);
+            throw new Error("AI returned invalid JSON");
+        }
+
+        const tasks = Array.isArray(parsed) ? parsed : [parsed];
+
+        for (const item of tasks) {
+            try {
+                await addScheduleToBackend(item);
+            } catch (err) {
+                console.error("Failed adding item:", err);
+            }
+        }
+
+        Swal.fire({
+            icon: "success",
+            title: "Day Generated!",
+            text: `Added ${tasks.length} tasks.`,
+            timer: 2000
+        }).then(() => start());
+
+    } catch (error) {
+        console.error("GenerateMyDay error:", error);
+        Swal.fire({
+            icon: "error",
+            title: "Lumen failed",
+            text: "Could not generate schedule."
+        });
+    }
 }
 
 async function lumenChat() {
